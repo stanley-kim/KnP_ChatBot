@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import json
 import time
 from flask import Flask, jsonify, request
 import smtplib
-
+from datetime import datetime
+from threading import Timer
 
 app = Flask(__name__)
 
@@ -37,7 +37,6 @@ _State1KeyList = [
       u'4.지하3층 컴퓨터실',
       u'5.치의학관 시설' ,
       u'이전 메뉴'
-
     ]   
 
   
@@ -486,7 +485,7 @@ def restore_prev_State(_UserRequestKey) :
     return instance[_UserRequestKey]['prev']
 
 def isValidID( number ) :
-    if number % 10000 in range(01, 80+1)  and \
+    if number % 10000 in range(1, 80+1)  and \
        (number / 10000) % 100 == 74 :
        return True 
     else :
@@ -532,6 +531,35 @@ def mail( to, subject, body, attach=None):
     server.close()
 
 
+x=datetime.today()
+#y=x.replace(day=x.day, hour=12, minute=0, second=0, microsecond=0)
+y=x.replace(day=x.day, hour=x.hour+2, minute=0, second=0, microsecond=0)
+delta_t=y-x
+
+
+secs=delta_t.seconds+1
+
+
+def hello_world() :
+    to = [ 'kws015@hanmail.net' ] 
+    subject =  'My first email through python flask'
+    body = 'this is all for Timer \n'                
+    #mail(to, subject , body)  
+    x=datetime.today()
+    y=x.replace(day=x.day, hour=x.hour+1, minute=0, second=0, microsecond=0)
+    delta_t=y-x
+
+    body += str(y.day) + '/'+ str(y.hour)+'\n'
+    mail(to, subject , body)    
+
+    secs=delta_t.seconds+1
+    s = Timer(secs, hello_world)
+    s.start()
+
+
+
+t = Timer(secs, hello_world)
+t.start()
 
 
 @app.route('/')
