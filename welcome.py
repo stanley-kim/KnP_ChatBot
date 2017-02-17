@@ -434,11 +434,7 @@ class  Arrow :
             _Photo["height"] = StatePhotoList[_toState]["height"]
         else :
             _PhotoFlag = False
-
-        #return self._make_Messages_change_State(_textMessage , False , {}  , False , {} , _ButtonFlag , _toState, _userRequest)
         return self._make_Messages_change_State(True, _textMessage , _PhotoFlag , _Photo  , False , {} , _ButtonFlag , _fromState, _toState, _userRequest)
-
-
 
 
 
@@ -533,7 +529,7 @@ def mail( to, subject, body, attach=None):
 
 x=datetime.today()
 #y=x.replace(day=x.day, hour=12, minute=0, second=0, microsecond=0)
-y=x.replace(day=x.day, hour=x.hour+2, minute=0, second=0, microsecond=0)
+y=x.replace(day=x.day, hour=x.hour+3, minute=0, second=0, microsecond=0)
 delta_t=y-x
 
 
@@ -546,7 +542,7 @@ def hello_world() :
     body = 'this is all for Timer \n'                
     #mail(to, subject , body)  
     x=datetime.today()
-    y=x.replace(day=x.day, hour=x.hour+1, minute=0, second=0, microsecond=0)
+    y=x.replace(day=x.day, hour=x.hour+3, minute=0, second=0, microsecond=0)
     delta_t=y-x
 
     body += str(y.day) + '/'+ str(y.hour)+'\n'
@@ -593,13 +589,10 @@ def GetMessage():
     if instance[userRequest['user_key']]['state'] == state[ initial_State ] :        #state 1
         currentState = instance[userRequest['user_key']]['state']   
         if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
-#            _textMessage = userRequest['content']+SelectString+u'\n'+AskLocationString
-#            return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,0,  1, userRequest)
             if  userRequest['user_key'] not in organization :
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) ,userRequest)
             else :
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,3) ,userRequest)
-
         elif userRequest['content']  ==  StateButtonList[ currentState ][1] :
             _textMessage = userRequest['content']+SelectString+u'\n'+UnderConstructionString+u'\n'
             _textMessage += time.strftime('%X %x %Z') + u'\n'
@@ -609,15 +602,6 @@ def GetMessage():
             if _UserRequestKey in sum_instance and \
                _UserRequestKey in organization  :
                 for key in sum_instance[_UserRequestKey] :
-                    #_textMessage += u'-------------------------------\n'
-                    #_textMessage += key + u'\n'
-                    #_textMessage += str(organization[ _UserRequestKey ]['ID']) +u'\n'
-                    #_textMessage += organization[ _UserRequestKey ]['Name'] + u'\n'
-                    #_textMessage += sum_instance[_UserRequestKey][key]['location'] + u'\n'
-                    #_textMessage += sum_instance[_UserRequestKey][key]['seat number'] + u'\n'
-                    #_textMessage += sum_instance[_UserRequestKey][key]['part'] + u'\n'
-                    #_textMessage += sum_instance[_UserRequestKey][key]['symptom'] + u'\n'
-
                     _textMessage += SummaryText()._generate(u'---------' + key +  u'------------\n' , organization, sum_instance, _UserRequestKey, key)
 
 
@@ -739,7 +723,6 @@ def GetMessage():
                 _text_ += u'기존 ID   :'+ str(organization[key]['ID'])+u'\n'
                 _text_ += u'기존 Name :'+ organization[key]['Name']+u'\n'
                 return Arrow()._make_Message_Button_change_State(True, _text_, True, currentState, currentState , userRequest )            
-#                return Arrow()._make_Message_Button_change_State( _text_, True, 4 , userRequest )            
 
                 #fill this later. for one user multi device case
                 #elif organization[key]['ID'] == temp_organization[userRequest['user_key']]['ID'] :
@@ -751,9 +734,6 @@ def GetMessage():
                     #instance[userRequest['user_key']]['state'] = state[41111] 
                     #return jsonify(_ItemList)
             else :
-#                _text_ = userRequest['content']+SelectString +u'\n' + InsertIDString                         
-#                return Arrow()._make_Message_Button_change_State(True, _text_, False ,currentState, first_Independent_IDInsert_State , userRequest )            
-#                return Arrow()._make_Message_Button_change_State( _text_, False , 41 , userRequest )            
                 return Arrow().make_Message_Button_change_State(currentState, first_Independent_IDInsert_State , userRequest)
 
         elif  userRequest['content']  ==  StateButtonList[currentState][1] :
@@ -762,14 +742,11 @@ def GetMessage():
                 _text_ += u'ID   :'+ str(organization[userRequest['user_key']]['ID'])+u'\n'
                 _text_ += u'Name :'+ organization[userRequest['user_key']]['Name']+u'\n'
                 return Arrow()._make_Message_Button_change_State(True, _text_, True, currentState, nx_Child_Sibling(currentState,1,1) , userRequest )            
-#                return Arrow()._make_Message_Button_change_State( _text_, True, 42 , userRequest )            
             else : 
                 _text_ =  userRequest['content']+SelectString + u'\n' + u'등록된 ID와 Name이 없습니다.'           
                 return Arrow()._make_Message_Button_change_State( True, _text_, True, currentState,  initial_State , userRequest )   
         elif  userRequest['content']  ==  StateButtonList[currentState][4] :  # return to prev menu
             return Arrow().make_Message_Button_change_State( currentState , prev_Parent(currentState,1) , userRequest )                        
-#            _text_ = userRequest['content']+SelectString
-#            return Arrow()._make_Message_Button_change_State(  _text_, True, 0 , userRequest )                        
         else : 
             _text_ = userRequest['content']+SelectString
             return Arrow()._make_Message_Button_change_State(True,  _text_, True, currentState,  initial_State , userRequest )                        
@@ -780,7 +757,6 @@ def GetMessage():
             # valid for seat and handpiece case?  
             if int ( userRequest['content'] )  in range(1,96+1) :
                 instance[userRequest['user_key']]['seat number'] = userRequest['content']
-#                return Arrow()._make_Messages_change_State(True, _textMessage, True , _photo , False, {}, True,currentState, nx_Child(currentState,1) , userRequest)
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest, request.url_root)
             elif  int ( userRequest['content'] ) == 0 :
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)   
@@ -820,8 +796,6 @@ def GetMessage():
         if  userRequest['content']  == '0' :
             return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest, request.url_root)   
         instance[userRequest['user_key']]['part'] = userRequest['content']
-        #_textMessage = userRequest['content']+SelectString+u'\n'+ DirectInsertSymptomString
-        #return Arrow()._make_Message_Button_change_State(True, _textMessage , False , currentState, nx_Child(currentState,2) , userRequest)
         return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2), userRequest)
 
     elif  instance[userRequest['user_key']]['state'] in range(nx_Child(first_4work_State,3)+0, nx_Child(first_4work_State,3)+ len_4work_part-2 )   or  \
@@ -834,8 +808,6 @@ def GetMessage():
             lastKeyIndex = len(StateButtonList[ currentState ])-1
             #direct describe case
             if  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex-1] :
-            #    _textMessage = DirectInsertSymptomString
-            #    return Arrow()._make_Message_Button_change_State(True, _textMessage, False, currentState, nx_Child(  determineSubGraph(currentState, True) ,4) , userRequest)             
                 return Arrow().make_Message_Button_change_State(currentState,nx_Child(  determineSubGraph(currentState, True) ,4), userRequest )
             elif  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex] :
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)   
@@ -866,8 +838,6 @@ def GetMessage():
         instance[userRequest['user_key']]['symptom'] = userRequest['content']            
         # no ID info case
         if userRequest['user_key'] not in organization:
-        #    _textMessage =  UnInsertedString + '\n' +  InsertYesNoString
-        #    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
             _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])                
             return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
         # already have ID info   
@@ -923,19 +893,9 @@ def GetMessage():
         if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
             instance[userRequest['user_key']]['location'] = userRequest['content']
             return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest, request.url_root)
-#            return Arrow()._make_Messages_change_State(True, _textMessage, True , _photo , False, {}, False,currentState, nx_Child(currentState,1) , userRequest)
-#            return Arrow()._make_Messages_change_State(_textMessage, True , _photo , False, {}, False, first_3work_State , userRequest)
         elif  userRequest['content']  ==  StateButtonList[ currentState ][1] :
-            #_textMessage = userRequest['content']+SelectString+u'\n'+ InsertCaseNumberString
-            #_photo = {  
-            #    "url": request.url_root+u'static/images/3work_case.png' ,
-            #    "width": 230,
-            #    "height": 218
-            #} 
             instance[userRequest['user_key']]['location'] = userRequest['content']
             return Arrow().make_Message_Button_change_State(currentState, nx_Child_Sibling(currentState,1,1), userRequest, request.url_root)
-#            return Arrow()._make_Messages_change_State(True, _textMessage, True , _photo , False, {}, False, currentState,nx_Child(currentState,1)+1   , userRequest)
-#            return Arrow()._make_Messages_change_State(_textMessage, True , _photo , False, {}, False, 132 , userRequest)
         elif  userRequest['content']  ==  StateButtonList[ currentState ][2] :
             return Arrow().make_Message_Button_change_State(currentState, prev_Parent( currentState, 1 ) , userRequest)   
         else : 
@@ -949,12 +909,8 @@ def GetMessage():
         currentState = instance[userRequest['user_key']]['state']              
         if  userRequest['content']  ==  StateButtonList[currentState][0] :
             organization.pop( userRequest['user_key'] ,  None)
-            #_textMessage = userRequest['content']+SelectString
-            #return  Arrow()._make_Message_Button_change_State(True,_textMessage, True, currentState,initial_State, userRequest)
             return Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
         elif  userRequest['content']  ==  StateButtonList[currentState][1] :
-            #_textMessage = userRequest['content']+SelectString
-            #return  Arrow()._make_Message_Button_change_State(True,_textMessage, True, currentState,initial_State, userRequest)
             return Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
         elif  userRequest['content']  ==  StateButtonList[currentState][2] :
             return Arrow().make_Message_Button_change_State(currentState,  prev_Parent(currentState,1) , userRequest)
