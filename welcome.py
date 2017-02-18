@@ -77,7 +77,8 @@ len_4work_part = len( _State111KeyList)
 
 _State141KeyList = [
       u'1.모니터',
-      u'2.네트워크',
+      u'2.본체',  
+      u'3.네트워크',    
       u'5.직접 입력',    
       u'이전 메뉴'                
 ]
@@ -117,6 +118,17 @@ _MonitorSymptomKeyList = [
       u'4.증상 직접 입력'  ,
       u'이전 메뉴'         
     ]   
+
+
+_MonitorSymptomMultiChoiceList = [
+      u'1:모니터 안 켜짐',
+      u'2:모니터 깜빡깜빡 거림',
+      u'3:모니터 흑백으로 나옴' 
+    ]   
+
+
+_MonitorSymptomJoinString = u'\n'.join(_MonitorSymptomMultiChoiceList)
+
 _110VoltSymptomKeyList = [
       u'1.전원 안 들어옴',
       u'2.구망에 안 들어감',
@@ -181,6 +193,28 @@ _ComnetworkSymptomKeyList = [
       u'이전 메뉴'       
 ]
 
+_ComnetworkSymptomMultiChoiceList = [
+      u'1:오프라인으로 나옴' ,
+      u'2:IP 충돌이라고 나옴' , 
+    ]   
+
+
+_ComnetworkSymptomJoinString = u'\n'.join(_ComnetworkSymptomMultiChoiceList)
+
+
+_CombodySymptomMultiChoiceList = [
+      u'1:전원이 안 켜짐'  ,
+      u'2:부팅이 안 됨' ,
+      u'3:USB 인식을 못 함'
+]
+_CombodySymptomJoinString = u'\n'.join(_CombodySymptomMultiChoiceList)
+
+
+
+StateMultiChoiceList = {
+                11114111: _MonitorSymptomMultiChoiceList ,  11114112:_CombodySymptomMultiChoiceList ,  11114113:_ComnetworkSymptomMultiChoiceList 
+}
+
 StateButtonList = { 1: _State0KeyList, 
                   14: _State4KeyList ,
                   142 : _YesorNoKeyList ,
@@ -191,12 +225,11 @@ StateButtonList = { 1: _State0KeyList,
                  14111: _YesorNoKeyList ,                 
                  11111111: _LightSymptomKeyList  ,  11111112: _MonitorSymptomKeyList ,    11111113 : _GastorchSymptomKeyList , 
                  11111114: _HandpieceengineSymptomKeyList ,11111115: _AirinletSymptomKeyList ,    11111116: _AiroutletSymptomKeyList ,
-                 11114111: _MonitorSymptomKeyList,  11114112: _ComnetworkSymptomKeyList, 
+                 #11114111: _MonitorSymptomKeyList,  
+                 #11114112: _ComnetworkSymptomKeyList, 
                  141111: _YesorNoKeyList  ,   
                                                  111131111: _DollSymtomKeyList ,        111131112: _MonitorSymptomKeyList,
                                                  111132111: _HighspeedSymtomKeyList,    111132112: _LowspeedSymptomList,                
-                                                 #1411111: _YesorNoKeyList, 
-                 #13111111: _YesorNoKeyList ,     13211111: _YesorNoKeyList ,  
                  1111111111: _YesorNoKeyList,    1111411111: _YesorNoKeyList,
                  11113111111: _YesorNoKeyList,   11113211111: _YesorNoKeyList                      
 }
@@ -224,6 +257,7 @@ AskLocationString = u'위치가 어디신가요?'
 AskSeatNumberString = u'자리가 어디신가요?\n0:이전 메뉴'
 AskPartString = u'어떤 부분이 문제인가요?'
 AskSymtomString = u'어떤 증상인가요?'
+AskMultiSymtomString = u'어떤 증상인가요?(복수, 직접 입력 가능)\nex) 1,3,나사 빠짐\n\n0:이전 메뉴로 돌아가기'
 InsertIDString = u'학번(혹은 사번)을 입력해주세요 ex)2011740011\n0:이전 메뉴'
 InsertNameString = u'이름을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
 ReInsertString = u'다시 입력해 주세요'
@@ -249,7 +283,7 @@ fromStateMessageList = {  1:SelectString+u'\n' ,
                           1111111:SelectString+u'\n' ,    1111411:SelectString+u'\n' ,        11113111:SelectString+u'\n' ,     11113211:SelectString+u'\n' ,
                           11111111:SelectString+u'\n' ,   11114111:SelectString+u'\n' ,       111131111:SelectString+u'\n' ,    111132111:SelectString+u'\n' ,
                           11111112:SelectString+u'\n' ,   11114112:SelectString+u'\n' ,       111131112:SelectString+u'\n' ,    111132112:SelectString+u'\n' ,
-                          11111113:SelectString+u'\n' ,                                     
+                          11111113:SelectString+u'\n' ,   11114113:SelectString+u'\n' ,                                  
                           11111114:SelectString+u'\n' ,
                           11111115:SelectString+u'\n' ,
                           11111116:SelectString+u'\n' ,
@@ -270,8 +304,12 @@ toStateMessageList = {    1:u'',
                           11111:AskSeatNumberString,       11114:AskSeatNumberString,                 111131:AskSeatNumberString,       111132:InsertCaseNumberString,                          
                           111111:AskPartString,            111141:AskPartString,                      1111311:AskPartString,            1111321:AskPartString,       
                           1111111:DirectInsertPartString,  1111411:DirectInsertPartString,            11113111:DirectInsertPartString,  11113211:DirectInsertPartString,
-                          11111111:AskSymtomString ,       11114111:AskSymtomString,                  111131111:AskSymtomString,        111132111:AskSymtomString,
-                          11111112:AskSymtomString ,       11114112:AskSymtomString,                  111131112:AskSymtomString,        111132112:AskSymtomString, 
+                          11111111:AskSymtomString ,       
+                          11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString ,                  
+                          11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString ,                                            
+                          11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString ,
+                          111131111:AskSymtomString,       111132111:AskSymtomString,
+                          11111112:AskSymtomString ,                                                   111131112:AskSymtomString,        111132112:AskSymtomString, 
                           11111113:AskSymtomString ,
                           11111114:AskSymtomString ,
                           11111115:AskSymtomString ,
@@ -287,7 +325,7 @@ toStateMessageList = {    1:u'',
 
 push_StateList = {
                   1111111:True, 11111111:True, 11111112:True, 11111113:True, 11111114:True, 11111115:True, 11111116:True, 111111111:True,
-                  1111411:True, 11114111:True, 11114112:True,                                                             111141111:True,
+                  1111411:True, 11114111:True, 11114112:True, 11114113:True,                                              111141111:True,
                   11113111:True,111131111:True,111131112:True,                                                            1111311111:True,
                   11113211:True,111132111:True,111132112:True,                                                            1111321111:True,
 }
@@ -400,7 +438,7 @@ class  Arrow :
         if _ButtonFlag  == True : 
             self.mItemList["keyboard"] = {  "type": "buttons" }
             self.mItemList["keyboard"]["buttons"] = StateButtonList[_toState]   
-        instance[_userRequest['user_key']]['state'] = _toState 
+        instance[_userRequest['user_key']]['state'] = _toState
 
         if _fromState in push_StateList and \
            _fromState < _toState :
@@ -782,8 +820,7 @@ def GetMessage():
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest, request.url_root  )   
             else :
                 instance[userRequest['user_key']]['part'] = userRequest['content']
-                _textMessage = userRequest['content']+SelectString+u'\n'+ AskSymtomString
-                return Arrow()._make_Message_Button_change_State( True, _textMessage , True, currentState, nx_Child(currentState,2)+i , userRequest )                        
+                return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2)+i , userRequest )
         else : 
             _textMessage = userRequest['content']+SelectString+u'\n'+'(state:'+ str(instance[userRequest['user_key']]['state']) + ')'
             instance[userRequest['user_key']] = { 'state' : state[initial_State] }            
@@ -800,8 +837,8 @@ def GetMessage():
 
     elif  instance[userRequest['user_key']]['state'] in range(nx_Child(first_4work_State,3)+0, nx_Child(first_4work_State,3)+ len_4work_part-2 )   or  \
           instance[userRequest['user_key']]['state'] in range(nx_Child(first_3work_State,3)+0, nx_Child(first_3work_State ,3)+ len_3work_part-2 )  or  \
-          instance[userRequest['user_key']]['state'] in range(nx_Child(first_3handpiece_State,3)+0, nx_Child(first_3handpiece_State,3)+ len_3handpiece_part-2 )  or \
-          instance[userRequest['user_key']]['state'] in range(nx_Child(first_3com_State ,3)+0, nx_Child(first_3com_State ,3)+ len_3com_part-2 )  : 
+          instance[userRequest['user_key']]['state'] in range(nx_Child(first_3handpiece_State,3)+0, nx_Child(first_3handpiece_State,3)+ len_3handpiece_part-2 )  :
+#          instance[userRequest['user_key']]['state'] in range(nx_Child(first_3com_State ,3)+1, nx_Child(first_3com_State ,3)+ len_3com_part-2 )  : 
 
         currentState = instance[userRequest['user_key']]['state'] 
         if  userRequest['content'] in StateButtonList[ currentState ] :
@@ -820,7 +857,7 @@ def GetMessage():
                 #already ID info  in organization  
                 else : 
                     _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
-                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)                     
         else :
             _textMessage = userRequest['content']+SelectString+u'\n'
             instance[userRequest['user_key']] = { 'state' : state[initial_State] }            
@@ -828,6 +865,42 @@ def GetMessage():
             # have to enable and verify  below code
             ##instance.pop( userRequest['user_key'] ,  None)
             return temp
+    elif   instance[userRequest['user_key']]['state'] in  \
+           range(nx_Child(first_3com_State ,3)+0, nx_Child(first_3com_State ,3)+ len_3com_part-2 ) :
+#          [ nx_Child(first_3com_State ,3), nx_Child(first_3com_State ,3)+1  ] :
+        currentState = instance[userRequest['user_key']]['state'] 
+        #instance[userRequest['user_key']]['symptom']
+        _textMultiChoice = u'' 
+        tokens =  userRequest['content'].split(",")   
+        if  len(tokens) == 1 and \
+            tokens[0].strip().isdigit() and \
+            int ( tokens[0].strip() ) == 0 :
+                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)              
+        for token in tokens :
+            if token.strip().isdigit() : 
+                if int(token.strip()) in range( 1, 1+len( StateMultiChoiceList[currentState] ) ) :
+                    _textMultiChoice += StateMultiChoiceList[currentState][ int(token.strip())-1 ]                    
+                else :
+                    _textMessage = token.strip()+SelectString+u'\n'+ InsertValidNumberString
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
+            else :
+                _textMultiChoice += token.strip()
+            if  token != tokens[-1] :
+                _textMultiChoice += u', '
+
+        instance[userRequest['user_key']]['symptom'] = _textMultiChoice
+        # ID info in temp_organization 
+        if userRequest['user_key'] not in organization:
+            _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])                
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
+        #already ID info  in organization  
+        else : 
+            _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
+
+                     
+
+
 
     elif   instance[userRequest['user_key']]['state']  \
     in  [ nx_Child(first_4work_State,4) , nx_Child(first_3work_State,4) , nx_Child(first_3handpiece_State ,4) , nx_Child(first_3com_State ,4) ]  :
