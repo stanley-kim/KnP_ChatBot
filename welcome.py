@@ -51,6 +51,7 @@ _State4KeyList = [
 
 _YesorNoKeyList = [  u'1.Yes', u'2.No' , u'이전 메뉴'  ]
 
+_YesorNoKeyListv2 = [  u'1.Yes', u'2.No' , u'이전 메뉴' , u'4.Yes(+파트 입력 추가)' ]
 
 _State13KeyList = [
       u'지하 3층 실습실(자리)',
@@ -235,13 +236,13 @@ StateButtonList = { 1: _State0KeyList,
 }
 
 StatePhotoList = {  
-                    11111:   {"url": u'static/images/4work_seats.jpeg' , "width": 399, "height": 490 } ,
+                    11111:   {"url": u'static/images/4work_seats.png' , "width": 548, "height": 482 } ,
                     111111:  {"url": u'static/images/4work_oneseat.png' ,"width": 200, "height": 283 } ,
-                    111131:  {"url": u'static/images/4work_seats.jpeg' ,"width": 399,"height": 490 }, 
+                    111131:  {"url": u'static/images/4work_seats.png'  ,"width": 548 ,"height": 482 }, 
                     1111311: {"url": u'static/images/3work_oneseat.png' ,"width": 200, "height": 283 } ,
                     111132:  {"url": u'static/images/3work_case.png' ,"width": 230,"height": 218}, 
                     1111321: {"url": u'static/images/3work_caseopen.png' ,"width": 200,"height": 283 } ,
-                    11114:   {"url": u'static/images/3com_seats.png' ,   "width": 360,"height": 270 }, 
+                    11114:   {"url": u'static/images/3com_seats.png' ,   "width": 662,"height": 465 }, 
                     111141:  {"url": u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 #                    141:  {"url": request.url_root+u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 }
