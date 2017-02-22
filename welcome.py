@@ -258,40 +258,40 @@ _CombodySymptomJoinString = u'\n'.join(_CombodySymptomMultiChoiceList)
 
 
 StateMultiChoiceList = {
-                11114111: _MonitorSymptomMultiChoiceList ,  11114112:_CombodySymptomMultiChoiceList ,  11114113:_ComnetworkSymptomMultiChoiceList,
-                111131111: _DollSymtomMultiChoiceList ,     111131112:_MonitorSymptomMultiChoiceList , 111131113:_LightSymptomMultiChoiceList ,  
-                111131114:_3WaySymptomMultiChoiceList,      111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     111131116:_LowspeedConnectorSymptomJoinString 
+                0x11114111: _MonitorSymptomMultiChoiceList ,  0x11114112:_CombodySymptomMultiChoiceList ,  0x11114113:_ComnetworkSymptomMultiChoiceList,
+                0x111131111: _DollSymtomMultiChoiceList ,     0x111131112:_MonitorSymptomMultiChoiceList , 0x111131113:_LightSymptomMultiChoiceList ,  
+                0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomJoinString 
 }
 
-StateButtonList = { 1: _State0KeyList, 
-                  14: _State4KeyList ,
-                  142 : _YesorNoKeyList ,
-                 1111: _State1KeyList ,             
-                 11113:  _State13KeyList,            
-                 111111: _State111KeyList,          111141: _State141KeyList,  
-                 1111311: _State1311KeyList ,       1111321 : _State1321KeyList, 
-                 14111: _YesorNoKeyList ,                 
-                 11111111: _LightSymptomKeyList  ,  11111112: _MonitorSymptomKeyList ,    11111113 : _GastorchSymptomKeyList , 
-                 11111114: _HandpieceengineSymptomKeyList ,11111115: _AirinletSymptomKeyList ,    11111116: _AiroutletSymptomKeyList ,
+StateButtonList = { 0x1: _State0KeyList, 
+                  0x14: _State4KeyList ,
+                  0x142 : _YesorNoKeyList ,
+                 0x1111: _State1KeyList ,             
+                 0x11113:  _State13KeyList,            
+                 0x111111: _State111KeyList,          0x111141: _State141KeyList,  
+                 0x1111311: _State1311KeyList ,       0x1111321 : _State1321KeyList, 
+                 0x14111: _YesorNoKeyList ,                 
+                 0x11111111: _LightSymptomKeyList  ,  0x11111112: _MonitorSymptomKeyList ,    0x11111113 : _GastorchSymptomKeyList , 
+                 0x11111114: _HandpieceengineSymptomKeyList ,0x11111115: _AirinletSymptomKeyList ,    0x11111116: _AiroutletSymptomKeyList ,
                  #11114111: _MonitorSymptomKeyList,  
                  #11114112: _ComnetworkSymptomKeyList, 
-                 141111: _YesorNoKeyList  ,   
+                 0x141111: _YesorNoKeyList  ,   
                  #111131111:          _DollSymtomKeyList  ,
                  #111131112: _MonitorSymptomKeyList,
-                                                   111132111: _HighspeedHandpieceSymtomKeyList,    111132112: _LowspeedHandpieceSymptomList,                
-                 1111111111: _YesorNoKeyListv2,    1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
-                 11113111111: _YesorNoKeyListv2,   11113211111: _YesorNoKeyListv2                      
+                                                   0x111132111: _HighspeedHandpieceSymtomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
+                 0x1111111111: _YesorNoKeyListv2,    0x1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
+                 0x11113111111: _YesorNoKeyListv2,   0x11113211111: _YesorNoKeyListv2                      
 }
 
 StatePhotoList = {  
-                    11111:   {"url": u'static/images/4work_seats.png' , "width": 548, "height": 482 } ,
-                    111111:  {"url": u'static/images/4work_oneseat.png' ,"width": 200, "height": 283 } ,
-                    111131:  {"url": u'static/images/4work_seats.png'  ,"width": 548 ,"height": 482 }, 
-                    1111311: {"url": u'static/images/3work_oneseat.png' ,"width": 200, "height": 283 } ,
-                    111132:  {"url": u'static/images/3work_case.png' ,"width": 230,"height": 218}, 
-                    1111321: {"url": u'static/images/3work_caseopen.png' ,"width": 200,"height": 283 } ,
-                    11114:   {"url": u'static/images/3com_seats.png' ,   "width": 662,"height": 465 }, 
-                    111141:  {"url": u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
+                    0x11111:   {"url": u'static/images/4work_seats.png' , "width": 548, "height": 482 } ,
+                    0x111111:  {"url": u'static/images/4work_oneseat.png' ,"width": 200, "height": 283 } ,
+                    0x111131:  {"url": u'static/images/4work_seats.png'  ,"width": 548 ,"height": 482 }, 
+                    0x1111311: {"url": u'static/images/3work_oneseat.png' ,"width": 200, "height": 283 } ,
+                    0x111132:  {"url": u'static/images/3work_case.png' ,"width": 230,"height": 218}, 
+                    0x1111321: {"url": u'static/images/3work_caseopen.png' ,"width": 200,"height": 283 } ,
+                    0x11114:   {"url": u'static/images/3com_seats.png' ,   "width": 662,"height": 465 }, 
+                    0x111141:  {"url": u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 #                    141:  {"url": request.url_root+u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 }
 
@@ -322,127 +322,128 @@ InsertCaseNumberString = u'Case의 번호를 입력해주세요\n0:이전 메뉴
 AskSeatHandpieceString = u'실습실 자리 문제인가요? 핸드피스 문제인가요?'
 AskDeletionString = u'삭제하시겠습니까?'
 
-fromStateMessageList = {  1:SelectString+u'\n' ,
-                          11:SelectString+u'\n' ,
-                          14:SelectString+u'\n' ,          111:SelectString+u'\n' ,          
-                          1111:SelectString+u'\n' ,
-                          11113:SelectString+u'\n' ,
-                          11111:InsertedString+u'\n' ,    11114:SelectString+u'\n' ,          111131:SelectString+u'\n' ,       111132:SelectString+u'\n' ,                                                 
-                          111111:InsertedString+u'\n' ,   111141:SelectString+u'\n' ,         1111311:SelectString+u'\n' ,      1111321:SelectString+u'\n' ,
-                          1111111:SelectString+u'\n' ,    1111411:SelectString+u'\n' ,        11113111:SelectString+u'\n' ,     11113211:SelectString+u'\n' ,
-                          11111111:SelectString+u'\n' ,   11114111:SelectString+u'\n' ,       111131111:SelectString+u'\n' ,    111132111:SelectString+u'\n' ,
-                          11111112:SelectString+u'\n' ,   11114112:SelectString+u'\n' ,       111131112:SelectString+u'\n' ,    111132112:SelectString+u'\n' ,
-                          11111113:SelectString+u'\n' ,   11114113:SelectString+u'\n' ,       111131113:SelectString+u'\n' ,                           
-                          11111114:SelectString+u'\n' ,                                       111131114:SelectString+u'\n' ,  
-                          11111115:SelectString+u'\n' ,                                       111131115:SelectString+u'\n' ,
-                          11111116:SelectString+u'\n' ,                                       111131116:SelectString+u'\n' ,
-                          111111111:SelectString+u'\n' ,    111141111:SelectString+u'\n' ,    1111311111:SelectString+u'\n' ,    1111321111:SelectString+u'\n' ,     
-                          1111111111:SelectString+SubmitString+u'\n' ,1111411111:SelectString+SubmitString+u'\n' ,11113111111:SelectString+u'\n' ,11113211111:SelectString+u'\n' ,
-                          141:SelectString+u'\n' ,   142:SelectString+u'\n' ,  
-                          1411:SelectString+ u'\n' , 
-                          14111:SelectString+ u'\n'
+fromStateMessageList = {  0x1:SelectString+u'\n' ,
+                          0x11:SelectString+u'\n' ,
+                          0x14:SelectString+u'\n' ,          0x111:SelectString+u'\n' ,          
+                          0x1111:SelectString+u'\n' ,
+                          0x11113:SelectString+u'\n' ,
+                          0x11111:InsertedString+u'\n' ,    0x11114:SelectString+u'\n' ,          0x111131:SelectString+u'\n' ,       0x111132:SelectString+u'\n' ,                                                 
+                          0x111111:InsertedString+u'\n' ,   0x111141:SelectString+u'\n' ,         0x1111311:SelectString+u'\n' ,      0x1111321:SelectString+u'\n' ,
+                          0x1111111:SelectString+u'\n' ,    0x1111411:SelectString+u'\n' ,        0x11113111:SelectString+u'\n' ,     0x11113211:SelectString+u'\n' ,
+                          0x11111111:SelectString+u'\n' ,   0x11114111:SelectString+u'\n' ,       0x111131111:SelectString+u'\n' ,    0x111132111:SelectString+u'\n' ,
+                          0x11111112:SelectString+u'\n' ,   0x11114112:SelectString+u'\n' ,       0x111131112:SelectString+u'\n' ,    0x111132112:SelectString+u'\n' ,
+                          0x11111113:SelectString+u'\n' ,   0x11114113:SelectString+u'\n' ,       0x111131113:SelectString+u'\n' ,                           
+                          0x11111114:SelectString+u'\n' ,                                         0x111131114:SelectString+u'\n' ,  
+                          0x11111115:SelectString+u'\n' ,                                         0x111131115:SelectString+u'\n' ,
+                          0x11111116:SelectString+u'\n' ,                                         0x111131116:SelectString+u'\n' ,
+                          0x111111111:SelectString+u'\n' ,  0x111141111:SelectString+u'\n' ,      0x1111311111:SelectString+u'\n' ,   0x1111321111:SelectString+u'\n' ,     
+                          0x1111111111:SelectString+SubmitString+u'\n' ,0x1111411111:SelectString+SubmitString+u'\n' ,0x11113111111:SelectString+u'\n' ,0x11113211111:SelectString+u'\n' ,
+                          0x141:SelectString+u'\n' ,        0x142:SelectString+u'\n' ,  
+                          0x1411:SelectString+ u'\n' , 
+                          0x14111:SelectString+ u'\n'
 }
 
-toStateMessageList = {    1:u'',                          
-                          1111:AskLocationString,
-                          11113:AskSeatHandpieceString,                                                    
-                          11111:AskSeatNumberString,       11114:AskSeatNumberString,                 111131:AskSeatNumberString,       111132:InsertCaseNumberString,                          
-                          111111:AskPartString,            111141:AskPartString,                      1111311:AskPartString,            1111321:AskPartString,       
-                          1111111:DirectInsertPartString,  1111411:DirectInsertPartString,            11113111:DirectInsertPartString,  11113211:DirectInsertPartString,
-                          11111111:AskSymtomString ,       
-                          11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString ,                  
-                          11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString ,                                            
-                          11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString ,
-                          111131111:AskMultiSymtomString+u'\n'+ _DollSymptomJoinString,       
-                          111131112:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString,    
-                          111131113:AskMultiSymtomString+u'\n'+ _LightSymptomJoinString,
-                          111131114:AskMultiSymtomString+u'\n'+ _3WaySymptomJoinString,
-                          111131115:AskMultiSymtomString+u'\n'+ _HighspeedConnectorSymptomJoinString,
-                          111131116:AskMultiSymtomString+u'\n'+ _LowspeedConnectorSymptomJoinString ,        
-                          111132111:AskSymtomString,
-                          111132112:AskSymtomString, 
-                          11111112:AskSymtomString ,                                                   
-                          11111113:AskSymtomString ,
-                          11111114:AskSymtomString ,
-                          11111115:AskSymtomString ,
-                          11111116:AskSymtomString ,
-                          111111111:DirectInsertSymptomString,  111141111:DirectInsertSymptomString,                1111311111:DirectInsertPartString,  1111321111:DirectInsertPartString,
-                          14:u'',
-                          11:InsertIDString,                     141:InsertIDString,                  142:AskDeletionString,
-                          111:InsertNameString,                  1411:InsertNameString,                
+toStateMessageList = {    0x1:u'',                          
+                          0x1111:AskLocationString,
+                          0x11113:AskSeatHandpieceString,                                                    
+                          0x11111:AskSeatNumberString,       0x11114:AskSeatNumberString,                 0x111131:AskSeatNumberString,       0x111132:InsertCaseNumberString,                          
+                          0x111111:AskPartString,            0x111141:AskPartString,                      0x1111311:AskPartString,            0x1111321:AskPartString,       
+                          0x1111111:DirectInsertPartString,  0x1111411:DirectInsertPartString,            0x11113111:DirectInsertPartString,  0x11113211:DirectInsertPartString,
+                          0x11111111:AskSymtomString ,       
+                          0x11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString ,                  
+                          0x11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString ,                                            
+                          0x11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString ,
+                          0x111131111:AskMultiSymtomString+u'\n'+ _DollSymptomJoinString,       
+                          0x111131112:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString,    
+                          0x111131113:AskMultiSymtomString+u'\n'+ _LightSymptomJoinString,
+                          0x111131114:AskMultiSymtomString+u'\n'+ _3WaySymptomJoinString,
+                          0x111131115:AskMultiSymtomString+u'\n'+ _HighspeedConnectorSymptomJoinString,
+                          0x111131116:AskMultiSymtomString+u'\n'+ _LowspeedConnectorSymptomJoinString ,        
+                          0x111132111:AskSymtomString,
+                          0x111132112:AskSymtomString, 
+                          0x11111112:AskSymtomString ,                                                   
+                          0x11111113:AskSymtomString ,
+                          0x11111114:AskSymtomString ,
+                          0x11111115:AskSymtomString ,
+                          0x11111116:AskSymtomString ,
+                          0x111111111:DirectInsertSymptomString,  0x111141111:DirectInsertSymptomString,                0x1111311111:DirectInsertPartString,  0x1111321111:DirectInsertPartString,
+                          0x14:u'',
+                          0x11:InsertIDString,                     0x141:InsertIDString,                  0x142:AskDeletionString,
+                          0x111:InsertNameString,                  0x1411:InsertNameString,                
 }
 
 push_StateList = {
-                  1111111:True, 11111111:True, 11111112:True, 11111113:True, 11111114:True, 11111115:True, 11111116:True, 111111111:True,
-                  1111411:True, 11114111:True, 11114112:True, 11114113:True,                                              111141111:True,
-                  11113111:True,111131111:True,111131112:True,111131113:True,111131114:True,111131115:True,111131116:True,1111311111:True,                
-                  11113211:True,111132111:True,111132112:True,                                                            1111321111:True,
+                  0x1111111:True, 0x11111111:True, 0x11111112:True, 0x11111113:True, 0x11111114:True, 0x11111115:True, 0x11111116:True, 0x111111111:True,
+                  0x1111411:True, 0x11114111:True, 0x11114112:True, 0x11114113:True,                                                    0x111141111:True,
+                  0x11113111:True,0x111131111:True,0x111131112:True,0x111131113:True,0x111131114:True,0x111131115:True,0x111131116:True,0x1111311111:True,                
+                  0x11113211:True,0x111132111:True,0x111132112:True,                                                                    0x1111321111:True,
 }
 
 pop_pushedStateList = {
-                       111111111:True , 111141111:True , 1111311111:True ,  1111321111:True     
+                       0x111111111:True , 0x111141111:True , 0x1111311111:True ,  0x1111321111:True     
 }   
 
-initial_State          = 1
-first_4work_State      = 11111
-first_3work_State      = 111131
-first_3handpiece_State = 111132
-first_3com_State       = 11114
+initial_State          = 0x1
+first_4work_State      = 0x11111
+first_3work_State      = 0x111131
+first_3handpiece_State = 0x111132
+first_3com_State       = 0x11114
 #last_4work_Light_State = 1111
-last_4work_Light_State      = 111111111
-last_3work_Doll_State       = 1111311111
-last_3handpiece_High_State  = 1111321111
-last_3com_State             = 111141111
+last_4work_Light_State      = 0x111111111
+last_3work_Doll_State       = 0x1111311111
+last_3handpiece_High_State  = 0x1111321111
+last_3com_State             = 0x111141111
 
-first_Independent_IDInsert_State = 141
+first_Independent_IDInsert_State = 0x141
 
 
-state = { 1:1 , 
-          11:11,                     2:2,                     3:3,                    14:14 , 
-          111:111,
-          1111:1111,
-          11111:11111 ,                  11114:11114,                   11113:11113,                  141:141,                   142:142, 
-          111111:111111 ,                111131:111131,                 111132:111132,                111141:111141,             1411:1411,
-          1111111:1111111 ,              1111311:1111311,               1111321:1111321,              1111411:1111411,           14111:14111 , 
-          11111111:11111111 ,            11111112:11111112,             11111113:11111113,            11111114:11111114 ,        11111115:11111115,
-          11111116:11111116,                          
-          11113111:11113111,             11113211:11113211,    
-          11114111:11114111,             11114112:11114112,             11114113:11114113,
-          141111:141111 ,     
-          111111111:111111111,           111141111:111141111,       
-          111131111:111131111  ,         111131112:111131112 ,          111131113:111131113 ,        111131114:111131114 ,     111131115:111131115 ,  111131116:111131116 , 
-          111132111:111132111  ,         111132112:111132112 ,          111132113:111132113 , #??           
-                                         1111311111:1111311111 ,        1111321111:1111321111 ,         
-          1111111111:1111111111,         1111311111:1111311111,   1111321111:1111321111,    1111411111:1111411111,    
-                                         11113111111:11113111111, 11113211111:11113211111             
+state = { 0x1:0x1 , 
+          0x11:0x11,                     0x2:0x2,                     0x3:0x3,                    0x14:0x14 , 
+          0x111:0x111,
+          0x1111:0x1111,
+          0x11111:0x11111 ,                  0x11114:0x11114,                   0x11113:0x11113,                  0x141:0x141,                   0x142:0x142, 
+          0x111111:0x111111 ,                0x111131:0x111131,                 0x111132:0x111132,                0x111141:0x111141,             0x1411:0x1411,
+          0x1111111:0x1111111 ,              0x1111311:0x1111311,               0x1111321:0x1111321,              0x1111411:0x1111411,           0x14111:0x14111 , 
+          0x11111111:0x11111111 ,            0x11111112:0x11111112,             0x11111113:0x11111113,            0x11111114:0x11111114 ,        0x11111115:0x11111115,
+          0x11111116:0x11111116,                          
+          0x11113111:0x11113111,             0x11113211:0x11113211,    
+          0x11114111:0x11114111,             0x11114112:0x11114112,             0x11114113:0x11114113,
+          0x141111:0x141111 ,     
+          0x111111111:0x111111111,           0x111141111:0x111141111,       
+          0x111131111:0x111131111  ,         0x111131112:0x111131112 ,          0x111131113:0x111131113 ,        0x111131114:0x111131114 ,     0x111131115:0x111131115 ,  0x111131116:0x111131116 , 
+          0x111132111:0x111132111  ,         0x111132112:0x111132112 ,          0x111132113:0x111132113 , #??           
+                                             0x1111311111:0x1111311111 ,        0x1111321111:0x1111321111 ,         
+          0x1111111111:0x1111111111,         0x1111311111:0x1111311111,         0x1111321111:0x1111321111,        0x1111411111:0x1111411111,    
+                                             0x11113111111:0x11113111111,       0x11113211111:0x11113211111             
 }
 
-Error_NoInt     = 9
-Error_NoSubTree = 8
+Error_NoInt     = 0x9
+Error_NoSubTree = 0x8
 def determineSubGraph( _State , _wantInfo ) :
     if type( _State ) is not int :
         return  Error_NoInt
     else :
-        num_str = str(_State)
-        if len(num_str) < len(str(first_4work_State)) :
+        num_str = format(_State,'02X')
+
+        if len(num_str) < len( format(first_4work_State,'02X')) :
             return Error_NoSubTree
         else :
-            if    num_str[:len(str(first_4work_State))] ==  str(first_4work_State) :
+            if    num_str[:len(format(first_4work_State,'02X'))] ==  format(first_4work_State,'02X') :
                 if _wantInfo == True :
                     return first_4work_State
                 else :
                     return last_4work_Light_State
-            elif  num_str[:len(str(first_3com_State))] == str(first_3com_State) :
+            elif  num_str[:len(format(first_3com_State,'02X'))] == format(first_3com_State,'02X') :
                 if _wantInfo == True :
                     return first_3com_State 
                 else :
                     return last_3com_State
-            elif  num_str[:len(str(first_3work_State))] == str(first_3work_State ) :
+            elif  num_str[:len(format(first_3work_State,'02X'))] == format(first_3work_State ,'02X') :
                 if _wantInfo == True :
                     return first_3work_State
                 else :
                     return last_3work_Doll_State  
-            elif  num_str[:len(str(first_3handpiece_State))] == str(first_3handpiece_State ) :
+            elif  num_str[:len(format(first_3handpiece_State,'02X'))] == format(first_3handpiece_State,'02X' ) :
                 if _wantInfo == True :
                     return first_3handpiece_State
                 else :
@@ -531,34 +532,34 @@ def  _nx_Child(stage_num , score) :
     if score == 0 :
         return stage_num
     else :
-        return _nx_Child(stage_num * 10 +1 , score-1)
+        return _nx_Child(stage_num * 0x10 +1 , score-1)
 
 def  nx_Child( stage_num , score ) :
     num = _nx_Child(stage_num, score)
     if _isValidState(num) :
         return num
     else :
-        return  num*100 
+        return  num*0x100 
 
 def nx_Child_Sibling(stage_num , child_score, sibling_score) :
     num = nx_Child(stage_num, child_score) + sibling_score
     if _isValidState(num) :
         return num
     else :
-        return  num*100 
+        return  num*0x100 
 
 def _prev_Parent(stage_num, score) :
     if score == 0 :
         return stage_num 
     else :
-        return _prev_Parent( stage_num/10  , score-1)    
+        return _prev_Parent( stage_num/0x10  , score-1)    
 
 def prev_Parent(stage_num, score) :
     num = _prev_Parent(stage_num, score)
     if _isValidState(num) :
         return num
     else :
-        return num * 100
+        return num * 0x100
 
 def restore_prev_State(_UserRequestKey) :
     return instance[_UserRequestKey]['prev']
@@ -680,7 +681,7 @@ def GetMessage():
             else :
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,3) ,userRequest)
         elif userRequest['content']  ==  StateButtonList[ currentState ][1] :
-            _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: 0.78\n'+UnderConstructionString+u'\n'
+            _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: 0.79\n'+UnderConstructionString+u'\n'
             _textMessage += time.strftime('%X %x %Z') + u'\n'
             _textMessage += u'최종 접수 예정:' +u'\n'
 
