@@ -23,7 +23,7 @@ from threading import Timer
 
 app = Flask(__name__)
 
-VersionString = u'0.81'
+VersionString = u'0.82'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -377,11 +377,7 @@ StateButtonList = { 0x1: _State0KeyList,
                  0x14111: _YesorNoKeyList ,                 
                  0x11111111: _LightSymptomKeyList  ,  0x11111112: _MonitorSymptomKeyList ,    0x11111113 : _GastorchSymptomKeyList , 
                  0x11111114: _HandpieceengineSymptomKeyList ,0x11111115: _AirinletSymptomKeyList ,    0x11111116: _AiroutletSymptomKeyList ,
-                 #11114111: _MonitorSymptomKeyList,  
-                 #11114112: _ComnetworkSymptomKeyList, 
                  0x141111: _YesorNoKeyList  ,   
-                 #111131111:          _DollSymtomKeyList  ,
-                 #111131112: _MonitorSymptomKeyList,
                                                    0x111132111: _HighspeedHandpieceSymtomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
                  0x1111111111: _YesorNoKeyListv2,    0x1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
                  0x11113111111: _YesorNoKeyListv2,   0x11113211111: _YesorNoKeyListv2                      
@@ -491,17 +487,12 @@ pop_pushedStateList = {
 }   
 
 initial_State          = 0x1
+
 first_4work_State      = 0x11111
+first_4eng_State       = 0x11112
 first_3work_State      = 0x111131
 first_3handpiece_State = 0x111132
 first_3com_State       = 0x11114
-first_4eng_State       = 0x11112
-#last_4work_Light_State = 1111
-last_4work_Light_State      = 0x111111111
-last_3work_Doll_State       = 0x1111311111
-last_3handpiece_High_State  = 0x1111321111
-last_3com_State             = 0x111141111
-last_4eng_State             = 0x111121111 #?
 
 first_Independent_IDInsert_State = 0x141
 
@@ -759,8 +750,6 @@ def determineSubGraph( _State , _next=0 ) :
             elif  num_str[:len(format(first_4eng_State,'02X'))] == format(first_4eng_State,'02X') :
                 if _next == 0 :
                     return  first_4eng_State
-                elif _next == 1 :                  
-                    return  first_4eng_State*0x10 +  int('0X'+num_str[len(format(first_4eng_State,'02X'))] ,0)
                 else :
                     return  nx_Child( first_4eng_State*0x10 +  int('0X'+num_str[len(format(first_4eng_State,'02X'))] ,0)  , _next -1 )                   
             elif  num_str[:len(format(first_3work_State,'02X'))] == format(first_3work_State ,'02X') :
