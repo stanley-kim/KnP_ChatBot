@@ -23,7 +23,7 @@ from threading import Timer
 
 app = Flask(__name__)
 
-VersionString = u'0.80'
+VersionString = u'0.81'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -743,7 +743,7 @@ def generate4EngStatesInformation() :
 
 Error_NoInt     = 0x9
 Error_NoSubTree = 0x8
-def determineSubGraph( _State , _wantInfo ) :
+def determineSubGraph( _State , _next=0 ) :
     if type( _State ) is not int :
         return  Error_NoInt
     else :
@@ -753,30 +753,20 @@ def determineSubGraph( _State , _wantInfo ) :
             return Error_NoSubTree
         else :
             if    num_str[:len(format(first_4work_State,'02X'))] ==  format(first_4work_State,'02X') :
-                if _wantInfo == True :
-                    return first_4work_State
-                else :
-                    return last_4work_Light_State
+                return nx_Child(first_4work_State,_next)
             elif  num_str[:len(format(first_3com_State,'02X'))] == format(first_3com_State,'02X') :
-                if _wantInfo == True :
-                    return first_3com_State 
-                else :
-                    return last_3com_State
+                return  nx_Child(first_3com_State, _next) 
             elif  num_str[:len(format(first_4eng_State,'02X'))] == format(first_4eng_State,'02X') :
-                if _wantInfo == True :
+                if _next == 0 :
+                    return  first_4eng_State
+                elif _next == 1 :                  
                     return  first_4eng_State*0x10 +  int('0X'+num_str[len(format(first_4eng_State,'02X'))] ,0)
                 else :
-                    return last_4eng_State  #?                   
+                    return  nx_Child( first_4eng_State*0x10 +  int('0X'+num_str[len(format(first_4eng_State,'02X'))] ,0)  , _next -1 )                   
             elif  num_str[:len(format(first_3work_State,'02X'))] == format(first_3work_State ,'02X') :
-                if _wantInfo == True :
-                    return first_3work_State
-                else :
-                    return last_3work_Doll_State  
+                return  nx_Child(first_3work_State, _next)
             elif  num_str[:len(format(first_3handpiece_State,'02X'))] == format(first_3handpiece_State,'02X' ) :
-                if _wantInfo == True :
-                    return first_3handpiece_State
-                else :
-                    return last_3handpiece_High_State 
+                return  nx_Child(first_3handpiece_State, _next)
             else :
                 return Error_NoSubTree
 
@@ -1228,7 +1218,7 @@ def GetMessage():
             lastKeyIndex = len(StateButtonList[ currentState ])-1
             #direct describe case
             if  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex-1] :
-                return Arrow().make_Message_Button_change_State(currentState,nx_Child(  determineSubGraph(currentState, True) ,4), userRequest )
+                return Arrow().make_Message_Button_change_State(currentState,nx_Child(  determineSubGraph(currentState) ,4), userRequest )
             elif  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex] :
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)   
             else:
@@ -1236,11 +1226,11 @@ def GetMessage():
                 # ID info in temp_organization 
                 if userRequest['user_key'] not in organization:
                     _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])                
-                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState) ,5) , userRequest)             
                 #already ID info  in organization  
                 else : 
                     _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
-                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)                     
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState) ,5) , userRequest)                     
         else :
             _textMessage = userRequest['content']+SelectString+u'\n'
             instance[userRequest['user_key']] = { 'state' : state[initial_State] }            
@@ -1285,10 +1275,7 @@ def GetMessage():
             #        if   sum_instance[_UserRequestKey][i]['seat number'] == instance[_UserRequestKey]['seat number'] and \
             #             sum_instance[_UserRequestKey][i]['location'] == instance[_UserRequestKey]['location'] :
             #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , temp_organization, sum_instance, _UserRequestKey, i, True)
-            if  currentState not in _4EngSymptomStateList :
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
-            else  :
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,4) , userRequest)                           
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
         #already ID info  in organization  
         else : 
             _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
@@ -1298,10 +1285,7 @@ def GetMessage():
             #        if   sum_instance[_UserRequestKey][i]['seat number'] == instance[_UserRequestKey]['seat number'] and \
             #             sum_instance[_UserRequestKey][i]['location'] == instance[_UserRequestKey]['location'] :
             #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i, True)
-            if  currentState not in _4EngSymptomStateList :
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
-            else :
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,4) , userRequest)             
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
 
 
     elif   instance[userRequest['user_key']]['state']  \
@@ -1315,17 +1299,11 @@ def GetMessage():
         # no ID info case
         if userRequest['user_key'] not in organization:
             _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])   
-            if currentState not in  range(   nx_Child(nx_Child(first_4eng_State,1),3), nx_Child( nx_Child_Sibling(first_4eng_State,1,12-1), 3)+1 ,  0x10)  :            
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
-            else :
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,4) , userRequest)                           
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  determineSubGraph(currentState ,5) , userRequest)             
         # already have ID info   
         else : 
             _textMessage = SummaryText()._generate(LastYesNoString + u'\n' ,  organization , instance , userRequest['user_key'])                
-            if currentState not in  range(   nx_Child(nx_Child(first_4eng_State,1),3), nx_Child( nx_Child_Sibling(first_4eng_State,1,12-1), 3)+1 ,  0x10)  :            
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,5) , userRequest)             
-            else :
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState, True) ,4) , userRequest)             
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  determineSubGraph(currentState ,5) , userRequest)             
 
     elif   instance[userRequest['user_key']]['state']  \
     in [ nx_Child(first_4work_State,5)   ,nx_Child(first_3work_State ,5) , nx_Child(first_3handpiece_State ,5), nx_Child( first_3com_State,5) ] +\
@@ -1356,10 +1334,7 @@ def GetMessage():
                 instance[userRequest['user_key']] = { 'state' : state[initial_State] }            
                 return  Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
             else  :
-                if currentState not in  range(   nx_Child(nx_Child(first_4eng_State,1),4), nx_Child( nx_Child_Sibling(first_4eng_State,1,12-1), 4)+1 ,  0x10)  :
-                    return Arrow().make_Message_Button_change_State(currentState, nx_Child( determineSubGraph(currentState, True),1)  , userRequest, request.url_root)
-                else :
-                    return Arrow().make_Message_Button_change_State(currentState, determineSubGraph(currentState, True)  , userRequest, request.url_root)                  
+                return Arrow().make_Message_Button_change_State(currentState,  determineSubGraph(currentState,1)  , userRequest, request.url_root)
         elif userRequest['content']  ==  StateButtonList[ currentState ][3] :  # prev menu
             return Arrow().make_Message_Button_change_State(currentState, restore_prev_State(userRequest['user_key'])  , userRequest)
             #if  userRequest['user_key'] not in temp_organization and \
