@@ -20,10 +20,11 @@ from flask import Flask, jsonify, request
 import smtplib
 from datetime import datetime
 from threading import Timer
+import os.path
 
 app = Flask(__name__)
 
-VersionString = u'0.82'
+VersionString = u'0.83'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -45,8 +46,9 @@ _State1KeyList = [
 _State4KeyList = [
       u'1.학번(혹은 사번) 및 이름 입력',
       u'2.학번(혹은 사번) 및 이름 삭제' ,
-      u'3.Forwarding Member 신청' , 
-      u'4.Forwarding Member 해제' ,
+      u'3.Forwarding 신청' , 
+      u'4.Forwarding 해제 신청' , 
+      u'5.시스템 관리자 메뉴' ,
       u'이전 메뉴'     
     ] 
 
@@ -424,6 +426,8 @@ InsertCaseNumberString = u'Case의 번호를 입력해주세요\n0:이전 메뉴
 
 AskSeatHandpieceString = u'실습실 자리 문제인가요? 핸드피스 문제인가요?'
 AskDeletionString = u'삭제하시겠습니까?'
+AskPasswordString = u'Password를 입력해주세요'
+AskMovementString = u'이동하실 메뉴를 선택해주세요\n ex)1:초기메뉴'
 
 fromStateMessageList = {  0x1:SelectString+u'\n' ,
                           0x11:SelectString+u'\n' ,
@@ -441,8 +445,8 @@ fromStateMessageList = {  0x1:SelectString+u'\n' ,
                           0x11111116:SelectString+u'\n' ,                                         0x111131116:SelectString+u'\n' ,
                           0x111111111:SelectString+u'\n' ,  0x111141111:SelectString+u'\n' ,      0x1111311111:SelectString+u'\n' ,   0x1111321111:SelectString+u'\n' ,     
                           0x1111111111:SelectString+SubmitString+u'\n' ,0x1111411111:SelectString+SubmitString+u'\n' ,0x11113111111:SelectString+u'\n' ,0x11113211111:SelectString+u'\n' ,
-                          0x141:SelectString+u'\n' ,        0x142:SelectString+u'\n' ,  
-                          0x1411:SelectString+ u'\n' , 
+                          0x141:SelectString+u'\n' ,        0x142:SelectString+u'\n' ,            0x145:SelectString+u'\n' ,          
+                          0x1411:SelectString+ u'\n' ,                                            0x1451:SelectString+u'\n' ,
                           0x14111:SelectString+ u'\n'
 }
 
@@ -471,8 +475,8 @@ toStateMessageList = {    0x1:u'',
                           0x11111116:AskSymtomString ,
                           0x111111111:DirectInsertSymptomString,  0x111141111:DirectInsertSymptomString,                0x1111311111:DirectInsertPartString,  0x1111321111:DirectInsertPartString,
                           0x14:u'',
-                          0x11:InsertIDString,                     0x141:InsertIDString,                  0x142:AskDeletionString,
-                          0x111:InsertNameString,                  0x1411:InsertNameString,                
+                          0x11:InsertIDString,                     0x141:InsertIDString,                  0x142:AskDeletionString,    0x145:AskPasswordString,
+                          0x111:InsertNameString,                  0x1411:InsertNameString,                                           0x1451:AskMovementString,
 }
 
 push_StateList = {
@@ -501,7 +505,7 @@ state = { 0x1:0x1 ,
           0x11:0x11,                     0x2:0x2,                     0x3:0x3,                    0x14:0x14 , 
           0x111:0x111,
           0x1111:0x1111,
-          0x11111:0x11111 ,                  0x11114:0x11114,                   0x11113:0x11113,                  0x141:0x141,                   0x142:0x142,    
+          0x11111:0x11111 ,                  0x11114:0x11114,                   0x11113:0x11113,                  0x141:0x141,                   0x142:0x142,            0x145:0x145,         0x1451:0x1451,
           0x111111:0x111111 ,                0x111131:0x111131,                 0x111132:0x111132,                0x111141:0x111141,             0x1411:0x1411,
           0x1111111:0x1111111 ,              0x1111311:0x1111311,               0x1111321:0x1111321,              0x1111411:0x1111411,           0x14111:0x14111 , 
           0x11111111:0x11111111 ,            0x11111112:0x11111112,             0x11111113:0x11111113,            0x11111114:0x11111114 ,        0x11111115:0x11111115,
@@ -769,12 +773,13 @@ instance = { 'temp': {'state':initial_State,
                      }
 }
 
-organization = { 'init' :  { 'id' : '' ,
-                              'name' : ''  
+
+organization = { 'init' :  { 'ID' : 0 ,
+                              'Name' : ''  
                             }
 }
-temp_organization = { 'temp' :  { 'id' : '' ,
-                                  'name' : ''  
+temp_organization = { 'temp' :  { 'ID' : 0 ,
+                                  'Name' : ''  
                                 }
 } 
 
@@ -999,12 +1004,10 @@ def GetMessage():
                 for i in range( len(sum_instance[_UserRequestKey]) ):
                     _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
 
-
                 to = [ 'kws015@hanmail.net' ] 
                 subject =  'My first email through python flask'
                 body = 'this is all for you\n'
                 body += str(organization[ _UserRequestKey ]['ID'])+'\n'
-
 
                 try:
                     mail(to, subject , body)
@@ -1015,7 +1018,7 @@ def GetMessage():
                     _textMessage += u'something went wrong2' 
                 except :
                     _textMessage += u'something went wrong0'
-            _textMessage += u'최종 접수 완료:' +u'\n'
+            #_textMessage += u'최종 접수 완료:' +u'\n'
             return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
         elif userRequest['content']  ==  StateButtonList[ currentState ][2] :             
             _textMessage = userRequest['content']+SelectString+u'\n'+UnderConstructionString
@@ -1137,8 +1140,10 @@ def GetMessage():
                 return Arrow()._make_Message_Button_change_State(True, _text_, True, currentState, nx_Child_Sibling(currentState,1,1) , userRequest )            
             else : 
                 _text_ =  userRequest['content']+SelectString + u'\n' + u'등록된 ID와 Name이 없습니다.'           
-                return Arrow()._make_Message_Button_change_State( True, _text_, True, currentState,  initial_State , userRequest )   
-        elif  userRequest['content']  ==  StateButtonList[currentState][4] :  # return to prev menu
+                return Arrow()._make_Message_Button_change_State( True, _text_, True, currentState,  initial_State , userRequest ) 
+        elif  userRequest['content']  ==  StateButtonList[currentState][4] :  #  go to administrator menu
+            return Arrow().make_Message_Button_change_State(currentState, nx_Child_Sibling(currentState,1,4), userRequest)                        
+        elif  userRequest['content']  ==  StateButtonList[currentState][5] :  # return to prev menu
             return Arrow().make_Message_Button_change_State( currentState , prev_Parent(currentState,1) , userRequest )                        
         else : 
             _text_ = userRequest['content']+SelectString
@@ -1340,9 +1345,7 @@ def GetMessage():
             _textMessage = userRequest['content']+ u'\n'+ CancelString 
             instance[userRequest['user_key']] = { 'state' : state[initial_State] }            
             return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,initial_State, userRequest)
-
-    #elif  instance[userRequest['user_key']]['state'] == 13 :
-#    elif  instance[userRequest['user_key']]['state'] == nx_Child_Sibling(1,1,2) :        
+       
     elif  instance[userRequest['user_key']]['state'] == nx_Child_Sibling( initial_State ,4,2) :        
 
         currentState = instance[userRequest['user_key']]['state']              
@@ -1360,7 +1363,6 @@ def GetMessage():
             return  Arrow()._make_Message_Button_change_State(True, _textMessage, True,  currentState,initial_State, userRequest)
 
     #insert Yes of No for delete and prepare branches
-#    elif  instance[userRequest['user_key']]['state'] == state[42] :
     elif  instance[userRequest['user_key']]['state'] == first_Independent_IDInsert_State+1  :
         currentState = instance[userRequest['user_key']]['state']              
         if  userRequest['content']  ==  StateButtonList[currentState][0] :
@@ -1371,9 +1373,33 @@ def GetMessage():
         elif  userRequest['content']  ==  StateButtonList[currentState][2] :
             return Arrow().make_Message_Button_change_State(currentState,  prev_Parent(currentState,1) , userRequest)
 
+    elif  instance[userRequest['user_key']]['state'] == nx_Child_Sibling( nx_Child_Sibling( initial_State ,1,3) ,1,4)  :
+        currentState = instance[userRequest['user_key']]['state']              
+        if  os.path.exists(u'static/document.txt')  :
+            f = open( u'static/document.txt' , 'r')
+            p = f.readline().strip()
+            f.close()  
+            if  userRequest['content'] == p  :
+                _textMessage = userRequest['content']+ fromStateMessageList[currentState]+u'\n'+ toStateMessageList[nx_Child(currentState,1)]+u'\n\n'
+                for key in organization.keys() :
+                    _textMessage += key  + u'->'+ str(organization[key]['ID']) + u' / '+ organization[key]['Name'] + u'\n'
+#                    _textMessage += key  + u'->'+ str(organization[key]) + u'\n'
+                return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
+            else :
+                return Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
+        else :
+            return Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
+    elif  instance[userRequest['user_key']]['state'] == nx_Child( nx_Child_Sibling( nx_Child_Sibling( initial_State ,1,3) ,1,4) , 1) :
+        currentState = instance[userRequest['user_key']]['state']
+        if  len(userRequest['content'])  > 0  :
+            return Arrow().make_Message_Button_change_State( currentState, initial_State, userRequest  )
+        else :
+            return Arrow().make_Message_Button_change_State( currentState, initial_State, userRequest )
+
+
     #else:     
-    _text = '(state:'+ format(instance[userRequest['user_key']]['state'] , '#04x' ) + ')' + userRequest['content']
-    text = "Valid command!"   
+    _text = '(state:'+ format(instance[userRequest['user_key']]['state'] , '#04x' ) + ')(content:' + userRequest['content'] + ')'
+    text = "Invalid State!"   
     text = text + "!! (" + _text + ")"  
     text = text + '(user_key:' + userRequest['user_key'] + ')'
 
