@@ -17,6 +17,7 @@ import os
 import json
 import time
 from flask import Flask, jsonify, request
+from email.mime.text import MIMEText
 import smtplib
 from datetime import datetime
 from threading import Timer
@@ -24,7 +25,7 @@ import os.path
 
 app = Flask(__name__)
 
-VersionString = u'0.84'
+VersionString = u'0.85'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -38,7 +39,6 @@ _State1KeyList = [
       u'2.지하4층 기공실',
       u'3.지하3층 실습실',
       u'4.지하3층 컴퓨터실',
-      u'5.치의학관 시설' ,
       u'이전 메뉴'
     ]   
 
@@ -321,7 +321,7 @@ _TableButtonListList = [
 
 _SandblastSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  ,
-      u'2:발판을 밟으면 바람은 나오나 모래가 안 나옴' 
+      u'2:바람은 나오나 모래가 안 나옴' 
 ]
 _SandblastSymptomJoinString = u'\n'.join(_SandblastSymptomMultiChoiceList)
 _VacuummixerSymptomMultiChoiceList = [
@@ -403,6 +403,8 @@ SubmitString = u'접수되었습니다.'
 CancelString = u'취소되었습니다'
 UnderConstructionString =u'-Under Construction-'
 UnInsertedString = u'필수 항목인 학번(혹은 사번)이 입력되지 않았습니다.'
+ExplainSymptomInsertionString = u'----------------------------------------\n'
+ExplainSymptomInsertionString +=u'단/복수 입력이 가능합니다.\nex) 2 (객관식 단수)\n\t\t물이 샘 (주관식 단수)\n\t\t1,2 (객관식 복수)\n\t\t1,2,물이 샘 (혼합 복수)'
 
 AskLocationString = u'위치가 어디신가요?'
 AskSeatNumberString = u'자리가 어디신가요?\n0:이전 메뉴'
@@ -411,6 +413,7 @@ AskPartString = u'어떤 부분이 문제인가요?'
 AskDeviceString = u'어떤 기계가 문제인가요?'
 AskSymtomString = u'어떤 증상인가요?'
 AskMultiSymtomString = u'어떤 증상인가요?(복수, 직접 입력 가능)\nex) 1,3,물이 샘\n\n0:이전 메뉴로 돌아가기'
+AskMultiSymtomString2 = u'어떤 증상인가요?\n\n0:이전 메뉴로 돌아가기'
 InsertIDString = u'학번(혹은 사번)을 입력해주세요 ex)2011740011\n0:이전 메뉴'
 InsertNameString = u'이름을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
 ReInsertString = u'다시 입력해 주세요'
@@ -664,7 +667,8 @@ def generate4EngStatesInformation() :
         _current_State = nx_Child_in(_current_State,1)
         toStateMessageList[ nx_Child_in(_current_State,2) ] = DirectInsertSymptomString
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 0 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
+    #toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString2+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ ExplainSymptomInsertionString
     toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString  
     toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString
     toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
@@ -769,29 +773,85 @@ LocationString = 'location'
 SeatNumberString = 'seat number'
 PartString = 'part'
 SymtomString = 'symptom'
+TimeString = 'time'
 
-sum_instance = { 'init' :  {} }
+sum_instance = { u'init' : {StateString:initial_State, 
+                            LocationString    : u'',
+                            SeatNumberString  : u'' ,
+                            PartString        : u'',
+                            SymtomString      : u'' 
+                     }
+}
 
-instance = { 'temp': {StateString:initial_State, 
-                      LocationString    : '',
-                      SeatNumberString : '' ,
-                      PartString        : '',
-                      SymtomString     : '' 
+instance = { u'temp': {StateString:initial_State, 
+                      LocationString    : u'',
+                      SeatNumberString  : u'' ,
+                      PartString        : u'',
+                      SymtomString      : u'' 
                      }
 }
 
 IDString = 'ID'
 NameString = 'Name'
 
-organization = { 'init' :  { IDString : 0 ,
-                              NameString : ''  
+organization = { u'init' :  { IDString : 0 ,
+                              NameString : u'init'  
                             }
 }
-temp_organization = { 'temp' :  { IDString : 0 ,
-                                  NameString : ''  
+temp_organization = { u'temp' :  { IDString : 0 ,
+                                  NameString : u'temp'  
                                 }
 } 
+org_rwfile_path = u'static/organization.txt'
 
+def generateOrganization( _org)  :
+    if os.path.exists(org_rwfile_path) :
+        f = open( org_rwfile_path , 'r') 
+        lines = f.readlines()
+        for line in lines :
+            tokens = line.decode('utf-8').split()
+            if tokens[0] not in _org and \
+                len(tokens) == 3 :
+                _org[tokens[0]] = { IDString : tokens[1] }
+                _org[tokens[0]][NameString ] = tokens[2]
+        f.close()   
+
+
+
+emailToList = []
+emailTo_rofile_path = u'static/email2.txt'
+def generateEmailToList( _email2list) :
+    if os.path.exists(emailTo_rofile_path) :
+        f = open( emailTo_rofile_path, 'r')
+        lines = f.readlines()
+        for line in lines :
+            tokens = line.split()
+            for token in tokens :
+                _email2list.append(token)
+        f.close()
+
+gmailUserString = u'ID'
+gmailPasswordString = u'Password'
+gmailInformation = {}
+emailFrom_rofile_path = u'static/document.txt'
+def generateEmailFrom(_gmailInfo) :
+    if os.path.exists(emailFrom_rofile_path) :
+        f = open( emailFrom_rofile_path, 'r')
+        f.readline()
+        line = f.readline()
+        tokens = line.split()
+        if len(tokens) == 2 :
+            _gmailInfo[gmailUserString] = tokens[0]
+            _gmailInfo[gmailPasswordString] = tokens[1]
+        else :
+            _gmailInfo[gmailUserString] = "insufficient"
+            _gmailInfo[gmailPasswordString] = "information"
+        f.close()
+
+
+
+
+pass_rofile_path = u'static/document.txt'
 
 class  Arrow :
     def  __init__(self, mItemList = { } ) :
@@ -896,7 +956,7 @@ def isValidID( number ) :
 
 class SummaryText :
     def  __init__(self, mText = '' ) :
-        self.mText = '' 
+        self.mText = u'' 
     
     def  _generate(self, _TextMessage,_organization,_instance, _UserRequestKey, _key1=None, _OnlyPart=False) :
         self.mText += _TextMessage
@@ -918,8 +978,8 @@ class SummaryText :
         return self.mText
 
 def mail( to, subject, body, attach=None):
-    gmail_user = "khudfix@gmail.com"
-    gmail_password = "khudfixars"
+    gmail_user = gmailInformation[gmailUserString]
+    gmail_password = gmailInformation[gmailPasswordString]
 
     email_text = """\  
     From: %s  
@@ -928,17 +988,27 @@ def mail( to, subject, body, attach=None):
 
     %s
     """ % (gmail_user, ", ".join(to), subject, body)
-     
+    
+    email_text = MIMEText( body , _charset="UTF-8")
+#    email_text['Subject'] = u'The contents' 
+    email_text['Subject'] = u'고장 접수 내역'
+
+    email_text['From'] = u'khudfix@gmail.com'
+    email_text['From'] = gmail_user
+    email_text['To'] = u", ".join(to)
+
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.ehlo()
     server.login(gmail_user, gmail_password)
-    server.sendmail(gmail_user , to, email_text )
+    server.sendmail(gmail_user , to, email_text.as_string() )
+#    server.sendmail(gmail_user , to, email_text )
+
     server.close()
 
 
 x=datetime.today()
 #y=x.replace(day=x.day, hour=12, minute=0, second=0, microsecond=0)
-y=x.replace(day=x.day, hour=x.hour+3, minute=0, second=0, microsecond=0)
+y=x.replace(day=x.day, hour=(x.hour+3)%24, minute=0, second=0, microsecond=0)
 delta_t=y-x
 
 
@@ -966,6 +1036,9 @@ def hello_world() :
 t = Timer(secs, hello_world)
 t.start()
 generate4EngStatesInformation()
+generateOrganization(organization)
+generateEmailToList( emailToList )
+generateEmailFrom(gmailInformation)
 
 @app.route('/')
 def Welcome():
@@ -1013,11 +1086,10 @@ def GetMessage():
                 for i in range( len(sum_instance[_UserRequestKey]) ):
                     _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
 
-                to = [ 'kws015@hanmail.net' ] 
+                to = emailToList 
                 subject =  'My first email through python flask'
-                body = 'this is all for you\n'
-                body += str(organization[ _UserRequestKey ][IDString])+'\n'
-
+                #body = 'this is all for you\n'
+                body = _textMessage.encode('utf-8')
                 try:
                     mail(to, subject , body)
 
@@ -1104,10 +1176,7 @@ def GetMessage():
         elif userRequest['content']  ==  StateButtonList[currentState][3] :
             instance[userRequest['user_key']][LocationString] = userRequest['content']
             return Arrow().make_Message_Button_change_State(currentState, first_3com_State, userRequest, request.url_root )
-        elif userRequest['content']  ==  StateButtonList[currentState][4] :
-            _textMessage = userRequest['content']+SelectString+u'\n'+UnderConstructionString
-            return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,currentState, initial_State, userRequest)
-        elif userRequest['content']  ==  StateButtonList[currentState][5] :  # return to prev menu
+        elif userRequest['content']  ==  StateButtonList[currentState][4] :  # return to prev menu
             if userRequest['user_key'] in organization :
               return Arrow().make_Message_Button_change_State( currentState , prev_Parent(currentState,3) , userRequest)
             else :
@@ -1254,10 +1323,16 @@ def GetMessage():
             tokens[0].strip().isdigit() and \
             int ( tokens[0].strip() ) == 0 :
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)              
+        lookup_table = []
         for token in tokens :
             if token.strip().isdigit() : 
-                if int(token.strip()) in range( 1, 1+len( StateMultiChoiceList[currentState] ) ) :
-                    _textMultiChoice += StateMultiChoiceList[currentState][ int(token.strip())-1 ]                    
+                _intValue = int(token.strip()) 
+                if _intValue in range( 1, 1+len( StateMultiChoiceList[currentState] ) ) :
+                    if  _intValue not in lookup_table :
+                        _textMultiChoice += StateMultiChoiceList[currentState][ _intValue-1 ]
+                        lookup_table.append( _intValue )
+                    else :
+                        continue                     
                 else :
                     _textMessage = token.strip()+SelectString+u'\n'+ InsertValidNumberString
                     return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
@@ -1265,7 +1340,11 @@ def GetMessage():
                 _textMultiChoice += token.strip()
             if  token != tokens[-1] :
                 _textMultiChoice += u', '
-
+        _MaxSymptomLen = 100 
+        TooLongString = u'너무 깁니다'
+        if len(_textMultiChoice) > _MaxSymptomLen :
+            _textMessage = _textMultiChoice+ fromStateMessageList[currentState] + TooLongString +u'(' + str(len(_textMultiChoice)) +u'>' +str(_MaxSymptomLen)+u')\n'+ReInsertString
+            return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
         instance[userRequest['user_key']][SymtomString] = _textMultiChoice
 
         _UserRequestKey = userRequest['user_key']
@@ -1326,7 +1405,7 @@ def GetMessage():
             if _UserRequestKey not in sum_instance    :
                 sum_instance[_UserRequestKey] = []
 
-            _copy_instance = { 'time':_Time }
+            _copy_instance = { TimeString:_Time }
             _copy_instance[LocationString] = instance[ _UserRequestKey ][LocationString]
             _copy_instance[SeatNumberString] = instance[ _UserRequestKey ][SeatNumberString]
             _copy_instance[PartString]  = instance[ _UserRequestKey ][PartString]            
@@ -1356,7 +1435,6 @@ def GetMessage():
             return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,initial_State, userRequest)
        
     elif  instance[userRequest['user_key']][StateString] == nx_Child_Sibling( initial_State ,4,2) :        
-
         currentState = instance[userRequest['user_key']][StateString]              
         if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
             instance[userRequest['user_key']][LocationString] = userRequest['content']
@@ -1384,15 +1462,27 @@ def GetMessage():
 
     elif  instance[userRequest['user_key']][StateString] == nx_Child_Sibling( nx_Child_Sibling( initial_State ,1,3) ,1,4)  :
         currentState = instance[userRequest['user_key']][StateString]              
-        if  os.path.exists(u'static/document.txt')  :
-            f = open( u'static/document.txt' , 'r')
+        if  os.path.exists(pass_rofile_path)  :
+            f = open( pass_rofile_path , 'r')
             p = f.readline().strip()
             f.close()  
             if  userRequest['content'] == p  :
-                _textMessage = userRequest['content']+ fromStateMessageList[currentState]+u'\n'+ toStateMessageList[nx_Child(currentState,1)]+u'\n\n'
+                _textMessage = userRequest['content']+ fromStateMessageList[currentState]+u'\n'+ toStateMessageList[nx_Child(currentState,1)]+u'\n\n'                
+                _textMessage += u'---from memory-----------\n'
+                f = open( org_rwfile_path , 'w')
                 for key in organization.keys() :
-                    _textMessage += key  + u'->'+ str(organization[key][IDString]) + u' / '+ organization[key][NameString] + u'\n'
-#                    _textMessage += key  + u'->'+ str(organization[key]) + u'\n'
+                    _line = key  + u'  '+ str(organization[key][IDString]) + u'  '+ organization[key][NameString] + u'\n'
+                    _textMessage += _line
+                    if  isinstance(_line, unicode) :
+                        f.write(_line.encode('utf-8')) 
+                f.close()
+                _textMessage += u'---to storage-----------\n'
+                if os.path.exists(org_rwfile_path) :
+                    f = open( org_rwfile_path , 'r') 
+                    lines = f.readlines()
+                    for line in lines :
+                        _textMessage += line.decode('utf-8')    
+                    f.close()                
                 return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
             else :
                 return Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
