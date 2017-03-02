@@ -19,13 +19,14 @@ import time
 from flask import Flask, jsonify, request
 from email.mime.text import MIMEText
 import smtplib
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Timer
-import os.path
+#import os.path
+
 
 app = Flask(__name__)
 
-VersionString = u'0.85'
+VersionString = u'0.86'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -58,14 +59,10 @@ _YesorNoKeyList = [  u'1.Yes', u'2.No' , u'이전 메뉴'  ]
 _YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴'  ]
 
 _State13KeyList = [
-      u'지하 3층 실습실(자리)',
-      u'핸드피스',
+      u'지하 3층 실습실 자리',
+      u'지하 3층용 핸드피스',
       u'이전 메뉴'     
 ]
-
-#_State42KeyList = _YesorNoKeyList
-#_State4111KeyList = _YesorNoKeyList
-#_State41111KeyList = _YesorNoKeyList
 
 _State111KeyList = [
       u'1.라이트',
@@ -84,20 +81,20 @@ _State141KeyList = [
       u'1.모니터',
       u'2.본체',  
       u'3.네트워크',    
-      u'5.직접 입력',    
+      u'4.직접 입력',    
       u'이전 메뉴'                
 ]
 len_3com_part = len( _State141KeyList)
 
 
 _State1311KeyList = [
-      u'토마스',
-      u'모니터',
-      u'라이트',      
-      u'3Way Air Water Syringe',   
-      u'하이스피드 핸드피스 Connector'  ,
-      u'로스피드 핸드피스 Connector'  ,               
-      u'직접 입력'  ,    
+      u'1.토마스',
+      u'2.모니터',
+      u'3.라이트',      
+      u'4.3Way Air Water Syringe',   
+      u'5.하이스피드 핸드피스 Connector'  ,
+      u'6.로스피드 핸드피스 Connector'  ,               
+      u'7.직접 입력'  ,    
       u'이전 메뉴'              
 ]
 len_3work_part = len( _State1311KeyList)
@@ -106,17 +103,17 @@ len_3work_part = len( _State1311KeyList)
 _State1321KeyList = [
       u'1.하이스피드 핸드피스',
       u'2.로스피드 핸드피스',
-      u'직접 입력'  ,    
+      u'3.직접 입력'  ,    
       u'이전 메뉴'              
 ]
 len_3handpiece_part = len( _State1321KeyList)
 
 
 _LightSymptomKeyList = [
-      u'안 켜짐',
-      u'깜빡깜빡 거림',
-      u'위치 고정 안 됨',
-      u'증상 직접 입력' ,
+      u'1:안 켜짐',
+      u'2:깜빡깜빡 거림',
+      u'3:위치 고정 안 됨',
+      u'4:증상 직접 입력' ,
       u'이전 메뉴'              
     ]   
 
@@ -130,10 +127,10 @@ _LightSymptomJoinString = u'\n'.join(_LightSymptomMultiChoiceList)
 
 
 _MonitorSymptomKeyList = [
-      u'1.모니터 안 켜짐',
-      u'2.모니터 깜빡깜빡 거림',
-      u'3.모니터 흑백으로 나옴' ,
-      u'4.증상 직접 입력'  ,
+      u'1:모니터 안 켜짐',
+      u'2:모니터 깜빡깜빡 거림',
+      u'3:모니터 흑백으로 나옴' ,
+      u'4:증상 직접 입력'  ,
       u'이전 메뉴'         
     ]   
 
@@ -156,32 +153,32 @@ _110VoltSymptomKeyList = [
 ]
 
 _GastorchSymptomKeyList = [
-      u'불 안 나옴',
-      u'불 너무 약함',
-      u'증상 직접 입력' ,
+      u'1:불 안 나옴',
+      u'2:불 너무 약함',
+      u'3:증상 직접 입력' ,
       u'이전 메뉴'    
 ]
 
 _220VoltSymptomKeyList = _110VoltSymptomKeyList
 
 _HandpieceengineSymptomKeyList = [
-      u'안 켜짐',
-      u'Hand로만 동작함',      
-      u'증상 직접 입력' ,
+      u'1:안 켜짐',
+      u'2:Hand로만 동작함',      
+      u'3:증상 직접 입력' ,
       u'이전 메뉴'    
 ]
 
 _AirinletSymptomKeyList = [
-      u'흡입 안 됨',
-      u'증상 직접 입력',
+      u'1:흡입 안 됨',
+      u'2:증상 직접 입력',
       u'이전 메뉴'    
 ]
 
 _AiroutletSymptomKeyList = [
-      u'공기 방출 안 됨',
-      u'방출 단계 조절 안 됨',
-      u'공기 방출구 빠짐' , 
-      u'증상 직접 입력',
+      u'1:공기 방출 안 됨',
+      u'2:방출 단계 조절 안 됨',
+      u'3:공기 방출구 빠짐' , 
+      u'4:증상 직접 입력',
       u'이전 메뉴'    
 ]
 
@@ -191,7 +188,7 @@ _DollSymtomKeyList = [
       u'2:목 셕션 안 됨' , 
       u'3:상악 덴티폼 고정 나사 없음' , 
       u'4:하악 덴티폼 고정 나사 없음' ,       
-      u'증상 직접 입력',
+      u'5:증상 직접 입력',
       u'이전 메뉴'        
 ]
 
@@ -237,9 +234,9 @@ _LowspeedHandpieceSymptomList = [
 ]
 
 _ComnetworkSymptomKeyList = [
-      u'오프라인으로 나옴' ,
-      u'IP 충돌이라고 나옴' , 
-      u'증상 직접 입력', 
+      u'1:오프라인으로 나옴' ,
+      u'2:IP 충돌이라고 나옴' , 
+      u'3:증상 직접 입력', 
       u'이전 메뉴'       
 ]
 
@@ -265,52 +262,98 @@ _Table1ButtonList = [
     u'Trimmer 10',   u'Sand Blast 3',  u'Sand Blast 7' ,
     u'직접 입력',      u'이전 메뉴'              
 ]
+_Table1SNList = [
+    u'1-13304400-000006', u'1-13304400-000005', u'1-12609100-000111', u'1-13304400-000004',
+    u'1-13303200-000010', u'1-13304400-000003', u'1-13304400-000007'
+]
 _Table2ButtonList = [
     u'Trimmer 8'   , u'Trimmer 9'  ,   u'Trimmer 14'  ,
     u'직접 입력'     ,  u'이전 메뉴'              
+]
+_Table2SNList = [
+    u'1-13301300-000008', u'1-13301300-000009', u'1-13303200-000014'
 ]
 _Table3ButtonList = [
     u'Trimmer 10'   , u'Trimmer 17'  ,   u'Trimmer 12'  ,
     u'직접 입력'     ,  u'이전 메뉴'              
 ]
+_Table3SNList = [
+    u'1-13301300-000010', u'1-13303200-000017', u'1-13303200-000012'
+]
+
 _Table4ButtonList = [
-    u'Trimmer 15'   , u'Trimmer 17'  ,   u'Trimmer 11'  ,
+    u'Trimmer 15'   , u'Trimmer 12'  ,   u'Trimmer 11'  ,
     u'직접 입력'     ,  u'이전 메뉴'              
 ]
+_Table4SNList = [
+    u'1-13303200-000015', u'1-13301300-000012', u'1-13303200-000011'
+]
+
 _Table5ButtonList = [
-    u'캐스팅머신 ?',     u'전기로 69',        u'전기로 68',
-    u'전기로 67',       u'전기로 67',
+    u'캐스팅머신 12',     u'전기로 69',        u'전기로 68',
+    u'전기로 67',       u'전기로 66',
     u'직접 입력'     ,   u'이전 메뉴'              
+]
+_Table5SNList = [
+    u'1-13303000-000012', u'1-10500500-000069', u'1-10500500-000068',
+    u'1-10500500-000067', u'1-10500500-000066'
 ]
 _Table6ButtonList = [
     u'캐스팅머신 13',     u'전기로 65',        u'전기로 64',
     u'직접 입력'     ,   u'이전 메뉴'              
 ]
+_Table6SNList = [
+    u'1-13303000-000013', u'1-10500500-000065', u'1-10500500-000064'
+]
+
 _Table7ButtonList = [
     u'캐스팅머신 14',     u'전기로 63',        u'전기로 62',
     u'직접 입력'     ,   u'이전 메뉴'              
 ]
+_Table7SNList = [
+    u'1-13303000-000014', u'1-10500500-000063', u'1-10500500-000062'
+]
+
 _Table8ButtonList = [
-    u'온성기 11',        u'온성기 13?',       u'스팀크리너 ?',
+    u'온성기 11',        u'온성기 13',       u'스팀크리너 78',
     u'스팀크리너 79',     u'온성기 12', 
     u'직접 입력'     ,   u'이전 메뉴'              
+]
+_Table8SNList = [
+    u'1-13302500-000011', u'1-13302500-000013', u'1-12627800-000078',
+    u'1-12627800-000079', u'1-13302500-000012'
 ]
 _Table9ButtonList = [
     u'분배기 1',         u'분배기 2',        u'스팀크리너 42',
     u'Vacuum Mixer 109',u'Vacuum Mixer 102', 
     u'직접 입력'     ,   u'이전 메뉴'         
 ]
+_Table9SNList = [
+    u'2-12611300-000001', u'2-12611300-000002', u'1-12627800-000042',
+    u'1-12609100-000109', u'1-12609100-000102'
+]
 _Table10ButtonList = [
-    u'Trimmer 9'  ,    u'Vacuum Mixer 108', u'분배기 4',         u'분배기 3',
+    u'Trimmer 9'  ,    u'Vacuum Mixer 108', u'분배기 4', u'분배기 3',
     u'직접 입력'     ,   u'이전 메뉴'              
 ]
+_Table10SNList = [
+    u'1-13303200-000009', u'1-12609100-000108', u'2-12611300-000004', u'2-12611300-000003'
+]
+
 _Table11ButtonList = [
-    u'Trimmer 9'  ,    u'Vacuum Mixer 108', u'스팀크리너 79',
+    u'Trimmer 16'  ,    u'Vacuum Mixer 110', u'스팀크리너 41',
     u'직접 입력'     ,   u'이전 메뉴'                  
 ]
+_Table11SNList = [
+    u'1-13303200-000016', u'1-12609100-000110', u'1-12627800-000041'  
+]
+
 _Table12ButtonList = [
     u'Poll Cleaner 48',u'Poll Cleaner 51',u'Poll Cleaner 52',u'Poll Cleaner 53',
     u'직접 입력'     ,   u'이전 메뉴'                  
+]
+_Table12SNList = [
+    u'1-12627800-000048', u'1-12627800-000051', u'1-12627800-000052', u'1-12627800-000053'
 ]
 
 _TableButtonListList = [
@@ -318,6 +361,13 @@ _TableButtonListList = [
     _Table5ButtonList,  _Table6ButtonList, _Table7ButtonList, _Table8ButtonList,
     _Table9ButtonList,  _Table10ButtonList,_Table11ButtonList,_Table12ButtonList         
 ]
+
+_TableSNListList = [
+    _Table1SNList,  _Table2SNList, _Table3SNList, _Table4SNList, 
+    _Table5SNList,  _Table6SNList, _Table7SNList, _Table8SNList,
+    _Table9SNList,  _Table10SNList,_Table11SNList,_Table12SNList         
+]
+
 
 _SandblastSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  ,
@@ -404,7 +454,8 @@ CancelString = u'취소되었습니다'
 UnderConstructionString =u'-Under Construction-'
 UnInsertedString = u'필수 항목인 학번(혹은 사번)이 입력되지 않았습니다.'
 ExplainSymptomInsertionString = u'----------------------------------------\n'
-ExplainSymptomInsertionString +=u'단/복수 입력이 가능합니다.\nex) 2 (객관식 단수)\n\t\t물이 샘 (주관식 단수)\n\t\t1,2 (객관식 복수)\n\t\t1,2,물이 샘 (혼합 복수)'
+ExplainSymptomInsertionString +=u'ex) 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
+#ExplainSymptomInsertionString +=u'단/복수 입력이 가능합니다.\nex) 2 (객관식 단수)\n\t\t물이 샘 (주관식 단수)\n\t\t1,2 (객관식 복수)\n\t\t1,2,물이 샘 (혼합 복수)'
 
 AskLocationString = u'위치가 어디신가요?'
 AskSeatNumberString = u'자리가 어디신가요?\n0:이전 메뉴'
@@ -525,6 +576,7 @@ state = { 0x1:0x1 ,
 }
 
 _4EngSymptomStateList = []
+_4EngDevSNList = {}
 
 len_4eng_tables = 0xc
 def generate4EngStatesInformation() :
@@ -558,14 +610,17 @@ def generate4EngStatesInformation() :
 
     StatePhotoList[first_4eng_State] = {"url": u'static/images/4eng_tables.png' , "width": 503, "height": 473 }
     for i in range(len_tables)  :
-        StatePhotoList[nx_Child_in(first_4eng_State,1)+i] = {"url": u'static/images/table'+str(i+1)+u'.jpg' , "width": 412, "height": 231 }
+        StatePhotoList[nx_Child_in(first_4eng_State,1)+i] = {"url": u'static/images/table'+str(i+1)+u'.jpg' , "width": 720, "height": 405 }
+    StatePhotoList[nx_Child_in(first_4eng_State,1)+0]["height"] = 387
 
     for i in range(len_tables)  :
         StateButtonList[nx_Child_in(first_4eng_State,1)+i] = _TableButtonListList[i]
         StateButtonList[  nx_Child_in(nx_Child_in(first_4eng_State,1)+i ,4) ] = _YesorNoKeyListv2
+    for i in range(len_tables)  :
+        _4EngDevSNList[nx_Child_in(first_4eng_State,1)+i] = _TableSNListList[i]   
 
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 0 , 2)
-    StateMultiChoiceList[_current_State+0]   =  _SandblastSymptomMultiChoiceList
+    StateMultiChoiceList[_current_State+0] =  _SandblastSymptomMultiChoiceList
     StateMultiChoiceList[_current_State+1] =  _SandblastSymptomMultiChoiceList  
     StateMultiChoiceList[_current_State+2] =  _VacuummixerSymptomMultiChoiceList
     StateMultiChoiceList[_current_State+3] =  _SandblastSymptomMultiChoiceList
@@ -775,13 +830,8 @@ PartString = 'part'
 SymtomString = 'symptom'
 TimeString = 'time'
 
-sum_instance = { u'init' : {StateString:initial_State, 
-                            LocationString    : u'',
-                            SeatNumberString  : u'' ,
-                            PartString        : u'',
-                            SymtomString      : u'' 
-                     }
-}
+sum_instance = { u'init' : [ ] } 
+
 
 instance = { u'temp': {StateString:initial_State, 
                       LocationString    : u'',
@@ -819,16 +869,26 @@ def generateOrganization( _org)  :
 
 
 emailToList = []
-emailTo_rofile_path = u'static/email2.txt'
-def generateEmailToList( _email2list) :
-    if os.path.exists(emailTo_rofile_path) :
-        f = open( emailTo_rofile_path, 'r')
+emailForwardingList = []
+emailAdminList = []
+emailMulti_rofile_path = u'static/email2.txt'
+def generateMultiEmailToList( _email2list, _emailfowardinglist, _emailadminlist) :
+    if os.path.exists(emailMulti_rofile_path) :
+        f = open( emailMulti_rofile_path, 'r')
         lines = f.readlines()
-        for line in lines :
-            tokens = line.split()
-            for token in tokens :
-                _email2list.append(token)
+
+        tokens = lines[0].split()
+        for i in range(1,len(tokens)) : 
+            _email2list.append(tokens[i])
+        tokens = lines[1].split()
+        for i in range(1,len(tokens)) : 
+            _emailfowardinglist.append(tokens[i])
+        tokens = lines[2].split()
+        for i in range(1,len(tokens)) : 
+            _emailadminlist.append(tokens[i])
         f.close()
+
+
 
 gmailUserString = u'ID'
 gmailPasswordString = u'Password'
@@ -847,9 +907,6 @@ def generateEmailFrom(_gmailInfo) :
             _gmailInfo[gmailUserString] = "insufficient"
             _gmailInfo[gmailPasswordString] = "information"
         f.close()
-
-
-
 
 pass_rofile_path = u'static/document.txt'
 
@@ -977,23 +1034,41 @@ class SummaryText :
             self.mText += u'symptom    :' + _instance[ _UserRequestKey ][_key1][SymtomString]+u'\n'
         return self.mText
 
+    def _genRegrouped(self, _TextMessage,_organization, _sum_instance) :
+        self.mText += _TextMessage
+
+        _sumins_org_regrouping = {}
+        for _userkey in _sum_instance.keys() :
+            for  _ins in  _sum_instance[_userkey]  : 
+                if  _ins[LocationString]  not in  _sumins_org_regrouping :
+                    _sumins_org_regrouping[ _ins[LocationString] ] = {}
+                if  _ins[SeatNumberString] not in _sumins_org_regrouping[_ins[LocationString]] :
+                    _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]] = []
+                _element = { 'user_key':_userkey }
+                _element[IDString] = _organization[_userkey][IDString]
+                _element[NameString] = _organization[_userkey][NameString]
+                _element[SymtomString] = _ins[SymtomString]
+                _element[PartString] = _ins[PartString]
+                _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)
+                
+        for _key0 in _sumins_org_regrouping :
+            self.mText += u'[['+ _key0    +u']]\n'
+            for _key1 in _sumins_org_regrouping[_key0] :
+                self.mText += u'['+ _key1    +u']\n'
+                for _ins in _sumins_org_regrouping[_key0][_key1] :
+                    self.mText += _ins[PartString] + u'\t'+_ins[SymtomString] + u'\t'+_ins[IDString]+u'\n'
+        return self.mText
+
+
+
+
 def mail( to, subject, body, attach=None):
     gmail_user = gmailInformation[gmailUserString]
     gmail_password = gmailInformation[gmailPasswordString]
-
-    email_text = """\  
-    From: %s  
-    To: %s  
-    Subject: %s
-
-    %s
-    """ % (gmail_user, ", ".join(to), subject, body)
     
     email_text = MIMEText( body , _charset="UTF-8")
-#    email_text['Subject'] = u'The contents' 
-    email_text['Subject'] = u'고장 접수 내역'
+    email_text['Subject'] = subject
 
-    email_text['From'] = u'khudfix@gmail.com'
     email_text['From'] = gmail_user
     email_text['To'] = u", ".join(to)
 
@@ -1001,44 +1076,88 @@ def mail( to, subject, body, attach=None):
     server.ehlo()
     server.login(gmail_user, gmail_password)
     server.sendmail(gmail_user , to, email_text.as_string() )
-#    server.sendmail(gmail_user , to, email_text )
 
     server.close()
 
 
-x=datetime.today()
-#y=x.replace(day=x.day, hour=12, minute=0, second=0, microsecond=0)
-y=x.replace(day=x.day, hour=(x.hour+3)%24, minute=0, second=0, microsecond=0)
-delta_t=y-x
+time_to_email = [ 8 ]  #7  ?
+time_difference = 9
+min2prepare = 10
+def _calcTimer() :
+    local_mail_hour = time_to_email[0]%24
+    cloud_mail_hour = (24 + local_mail_hour -time_difference)%24
+    x = datetime.today()
+    y = x.replace(hour=cloud_mail_hour, minute=0, second=0, microsecond=0)
+    if  datetime.now() +  timedelta(minutes=min2prepare) >= y :    
+        y += timedelta(days=1)      
+    delta_t=y-x
+    secs=delta_t.seconds+1
+    return secs
 
 
-secs=delta_t.seconds+1
+def periodic_mail_forwarding()  :    
+    to = emailToList 
+    body = SummaryText()._genRegrouped(u'', organization, sum_instance)
+    #this is yesterday's summary
+    subject = u'실습실 고장 목록입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
+    mail(to, subject , body.encode('utf-8') )        
+
+#######    y=x.replace(day=x.day, hour=(x.hour+1)%24, minute=0, second=0, microsecond=0)
+    mail_hour = time_to_email[0]%24
+    x=datetime.today()
+#    if mail_hour in range(0,9) :
+    if mail_hour in range(0,time_difference) :
+        y=x.replace(day=x.day+1, hour=mail_hour+(24-time_difference ), minute=0, second=0, microsecond=0)
+#        y=x.replace(day=x.day+1, hour=mail_hour+15, minute=0, second=0, microsecond=0)
+    else :  # range(9.24)
+        y=x.replace(day=x.day+1, hour=mail_hour- time_difference  , minute=0, second=0, microsecond=0)
+#        y=x.replace(day=x.day+1, hour=mail_hour-9, minute=0, second=0, microsecond=0)
+
+    delta_t=y-x
+
+    secs=delta_t.seconds+1
+
+    t = Timer( _calcTimer(), periodic_mail_forwarding)
+    t.start()
 
 
 def hello_world() :
-    to = [ 'kws015@hanmail.net' ] 
-    subject =  'My first email through python flask'
-    body = 'this is all for Timer \n'                
+    #to = [ 'kws015@hanmail.net' ]
+##    to = emailToList 
+    #subject =  'My first email through python flask'
+##    subject =  u'My first email through python flask'
+    #body = 'this is all for Timer \n'    
+##    body = u'this is all for Timer \n'
     #mail(to, subject , body)  
     x=datetime.today()
-    y=x.replace(day=x.day, hour=x.hour+3, minute=0, second=0, microsecond=0)
+#######    y=x.replace(day=x.day, hour=(x.hour+1)%24, minute=0, second=0, microsecond=0)
+    mail_hour = time_to_email[0]%24
+    if mail_hour in range(0,time_difference) :
+        if x.hour < mail_hour +(24-time_difference ) :
+            y=x.replace(day=x.day, hour=mail_hour+(24-time_difference ), minute=0, second=0, microsecond=0)
+        else :
+            y=x.replace(day=x.day+1, hour=mail_hour+(24-time_difference ), minute=0, second=0, microsecond=0)
+    else :  # range(9.24)
+        if x.hour < mail_hour -time_difference :
+            y=x.replace(day=x.day, hour=mail_hour-time_difference, minute=0, second=0, microsecond=0)
+        else :
+            y=x.replace(day=x.day+1, hour=mail_hour-time_difference, minute=0, second=0, microsecond=0)
     delta_t=y-x
 
-    body += str(y.day) + '/'+ str(y.hour)+'\n'
-    mail(to, subject , body)    
+##    body += str(y.day) + '/'+ str(y.hour)+'\n'
+##    mail(to, subject , body)    
 
     secs=delta_t.seconds+1
-    s = Timer(secs, hello_world)
+
+    s = Timer( _calcTimer() , periodic_mail_forwarding)
     s.start()
 
-
-
-t = Timer(secs, hello_world)
-t.start()
 generate4EngStatesInformation()
 generateOrganization(organization)
-generateEmailToList( emailToList )
+generateMultiEmailToList(emailToList, emailForwardingList, emailAdminList)
 generateEmailFrom(gmailInformation)
+
+hello_world()
 
 @app.route('/')
 def Welcome():
@@ -1076,29 +1195,35 @@ def GetMessage():
             else :
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,3) ,userRequest)
         elif userRequest['content']  ==  StateButtonList[ currentState ][1] :
-            _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'+UnderConstructionString+u'\n'
-            _textMessage += time.strftime('%X %x %Z') + u'\n'
+            _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+            _textMessage += (datetime.now() + timedelta(hours=time_difference) )  .strftime("%Y-%m-%d %H:%M:%S") + u'\n'
+
             _textMessage += u'최종 접수 예정:' +u'\n'
 
             _UserRequestKey = userRequest['user_key'] 
             if _UserRequestKey in sum_instance and \
                _UserRequestKey in organization  :
+
+
                 for i in range( len(sum_instance[_UserRequestKey]) ):
                     _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
 
-                to = emailToList 
-                subject =  'My first email through python flask'
+                #to = emailToList
+                to = emailForwardingList 
+                #subject = u'개인별 고장'.encode('utf-8')
+                subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
                 #body = 'this is all for you\n'
                 body = _textMessage.encode('utf-8')
                 try:
                     mail(to, subject , body)
 
                 except smtplib.SMTPAuthenticationError : 
-                    _textMessage += u'something went wrong1' 
-                except smtplib.SMTPException : 
-                    _textMessage += u'something went wrong2' 
+                    _textMessage += u'situation01' 
+                except smtplib.SMTPException :  
+                    _textMessage += u'situation02' 
                 except :
-                    _textMessage += u'something went wrong0'
+                    _textMessage += u'situation00' 
+
             #_textMessage += u'최종 접수 완료:' +u'\n'
             return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
         elif userRequest['content']  ==  StateButtonList[ currentState ][2] :             
@@ -1267,6 +1392,8 @@ def GetMessage():
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest, request.url_root  )   
             else :
                 instance[userRequest['user_key']][PartString] = userRequest['content']
+                if currentState in range( nx_Child(first_4eng_State,1) , nx_Child_Sibling(first_4eng_State,1,12-1)+1) :
+                    instance[userRequest['user_key']][PartString] += u'('+ _4EngDevSNList[currentState][i] +u')'    
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child_Sibling(currentState,2,i) , userRequest )
         else : 
             _textMessage = userRequest['content']+SelectString+u'\n'+'(state:'+ str(instance[userRequest['user_key']][StateString]) + ')'
@@ -1401,7 +1528,7 @@ def GetMessage():
                 temp_organization.pop( userRequest['user_key'] ,  None)
 
             _UserRequestKey = userRequest['user_key']
-            _Time = time.strftime('%X %x %Z')
+            _Time =  unicode( (datetime.now() + timedelta(hours=time_difference) ).strftime("%Y-%m-%d %H:%M:%S") )
             if _UserRequestKey not in sum_instance    :
                 sum_instance[_UserRequestKey] = []
 
@@ -1482,7 +1609,26 @@ def GetMessage():
                     lines = f.readlines()
                     for line in lines :
                         _textMessage += line.decode('utf-8')    
-                    f.close()                
+                    f.close()
+
+                _textMessage += SummaryText()._genRegrouped(u'---instances-----------\n', organization, sum_instance)
+                #to = emailToList
+                to = emailAdminList 
+                #subject =  u'My 0th email through python flask'
+                #subject =  u'전체고장'.encode('utf-8')
+                subject = u'전체고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
+                #body = 'this is all for you\n'
+                body = _textMessage.encode('utf-8')
+                try:
+                    mail(to, subject , body)
+
+                except smtplib.SMTPAuthenticationError : 
+                    _textMessage += u'something went wrong1' 
+                except smtplib.SMTPException : 
+                    _textMessage += u'something went wrong2' 
+                except :
+                    _textMessage += u'something went wrong0'
+
                 return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
             else :
                 return Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
