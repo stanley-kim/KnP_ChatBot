@@ -26,7 +26,7 @@ from threading import Timer
 
 app = Flask(__name__)
 
-VersionString = u'0.86'
+VersionString = u'0.87'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -861,8 +861,9 @@ def generateOrganization( _org)  :
         for line in lines :
             tokens = line.decode('utf-8').split()
             if tokens[0] not in _org and \
-                len(tokens) == 3 :
-                _org[tokens[0]] = { IDString : tokens[1] }
+                len(tokens) == 3 and \
+                tokens[1].isdigit() :
+                _org[tokens[0]] = { IDString : int(tokens[1]) }
                 _org[tokens[0]][NameString ] = tokens[2]
         f.close()   
 
@@ -1039,28 +1040,26 @@ class SummaryText :
 
         _sumins_org_regrouping = {}
         for _userkey in _sum_instance.keys() :
+            if _userkey not in _organization :
+                continue
             for  _ins in  _sum_instance[_userkey]  : 
                 if  _ins[LocationString]  not in  _sumins_org_regrouping :
                     _sumins_org_regrouping[ _ins[LocationString] ] = {}
                 if  _ins[SeatNumberString] not in _sumins_org_regrouping[_ins[LocationString]] :
                     _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]] = []
                 _element = { 'user_key':_userkey }
-                _element[IDString] = _organization[_userkey][IDString]
-                _element[NameString] = _organization[_userkey][NameString]
+                _element[IDString]     = _organization[_userkey][IDString]
+                _element[NameString]   = _organization[_userkey][NameString]
                 _element[SymtomString] = _ins[SymtomString]
-                _element[PartString] = _ins[PartString]
-                _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)
-                
+                _element[PartString]   = _ins[PartString]
+                _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
         for _key0 in _sumins_org_regrouping :
             self.mText += u'[['+ _key0    +u']]\n'
             for _key1 in _sumins_org_regrouping[_key0] :
                 self.mText += u'['+ _key1    +u']\n'
                 for _ins in _sumins_org_regrouping[_key0][_key1] :
-                    self.mText += _ins[PartString] + u'\t'+_ins[SymtomString] + u'\t'+_ins[IDString]+u'\n'
+                    self.mText += _ins[PartString] + u'\t'+_ins[SymtomString] + u'\t'+ str(_ins[IDString])+u'\n'
         return self.mText
-
-
-
 
 def mail( to, subject, body, attach=None):
     gmail_user = gmailInformation[gmailUserString]
