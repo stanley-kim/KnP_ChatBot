@@ -18,15 +18,21 @@ import json
 import time
 from flask import Flask, jsonify, request
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 import smtplib
 from datetime import datetime, timedelta
 from threading import Timer
-#import os.path
+
+import shutil
+from openpyxl import load_workbook
+from openpyxl.drawing.image import Image
 
 
 app = Flask(__name__)
 
-VersionString = u'0.87'
+VersionString = u'0.88'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -59,51 +65,51 @@ _YesorNoKeyList = [  u'1.Yes', u'2.No' , u'이전 메뉴'  ]
 _YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴'  ]
 
 _State13KeyList = [
-      u'지하 3층 실습실 자리',
-      u'지하 3층용 핸드피스',
+      u'5.지하 3층 실습실 자리',
+      u'6.지하 3층용 핸드피스',
       u'이전 메뉴'     
 ]
 
 _State111KeyList = [
-      u'1.라이트',
-      u'2.모니터',
-      u'3.가스토치',
-      u'4.핸드피스 엔진',
-      u'5.Air Suction(흡입구)',
-      u'6.Air Spray(배출구)' ,
-      u'7.직접 입력'  ,    
+      u'라이트',
+      u'모니터',
+      u'가스토치',
+      u'핸드피스 엔진',
+      u'Air Suction(흡입구)',
+      u'Air Spray(배출구)' ,
+      u'직접 입력'  ,    
       u'이전 메뉴'     
     ]   
 
 len_4work_part = len( _State111KeyList)
 
 _State141KeyList = [
-      u'1.모니터',
-      u'2.본체',  
-      u'3.네트워크',    
-      u'4.직접 입력',    
+      u'모니터',
+      u'본체',  
+      u'네트워크',    
+      u'직접 입력',    
       u'이전 메뉴'                
 ]
 len_3com_part = len( _State141KeyList)
 
 
 _State1311KeyList = [
-      u'1.토마스',
-      u'2.모니터',
-      u'3.라이트',      
-      u'4.3Way Air Water Syringe',   
-      u'5.하이스피드 핸드피스 Connector'  ,
-      u'6.로스피드 핸드피스 Connector'  ,               
-      u'7.직접 입력'  ,    
+      u'토마스',
+      u'모니터',
+      u'라이트',      
+      u'3Way Air Water Syringe',   
+      u'하이스피드 핸드피스 Connector'  ,
+      u'로스피드 핸드피스 Connector'  ,               
+      u'직접 입력'  ,    
       u'이전 메뉴'              
 ]
 len_3work_part = len( _State1311KeyList)
 
 
 _State1321KeyList = [
-      u'1.하이스피드 핸드피스',
-      u'2.로스피드 핸드피스',
-      u'3.직접 입력'  ,    
+      u'하이스피드 핸드피스',
+      u'로스피드 핸드피스',
+      u'직접 입력'  ,    
       u'이전 메뉴'              
 ]
 len_3handpiece_part = len( _State1321KeyList)
@@ -127,18 +133,18 @@ _LightSymptomJoinString = u'\n'.join(_LightSymptomMultiChoiceList)
 
 
 _MonitorSymptomKeyList = [
-      u'1:모니터 안 켜짐',
-      u'2:모니터 깜빡깜빡 거림',
-      u'3:모니터 흑백으로 나옴' ,
+      u'1:안 켜짐',
+      u'2:깜빡깜빡 거림',
+      u'3:흑백으로 나옴' ,
       u'4:증상 직접 입력'  ,
       u'이전 메뉴'         
     ]   
 
 
 _MonitorSymptomMultiChoiceList = [
-      u'1:모니터 안 켜짐',
-      u'2:모니터 깜빡깜빡 거림',
-      u'3:모니터 흑백으로 나옴' 
+      u'1:안 켜짐',
+      u'2:깜빡깜빡 거림',
+      u'3:흑백으로 나옴' 
     ]   
 
 
@@ -217,8 +223,6 @@ _LowspeedConnectorSymptomMultiChoiceList = [
       u'1:Connector 없음' 
 ]
 _LowspeedConnectorSymptomJoinString = u'\n'.join(_LowspeedConnectorSymptomMultiChoiceList)
-
-
 
 _HighspeedHandpieceSymtomKeyList = [
       u'1:회전 안 됨' , 
@@ -454,7 +458,8 @@ CancelString = u'취소되었습니다'
 UnderConstructionString =u'-Under Construction-'
 UnInsertedString = u'필수 항목인 학번(혹은 사번)이 입력되지 않았습니다.'
 ExplainSymptomInsertionString = u'----------------------------------------\n'
-ExplainSymptomInsertionString +=u'ex) 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
+ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
+#ExplainSymptomInsertionString +=u'ex) 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
 #ExplainSymptomInsertionString +=u'단/복수 입력이 가능합니다.\nex) 2 (객관식 단수)\n\t\t물이 샘 (주관식 단수)\n\t\t1,2 (객관식 복수)\n\t\t1,2,물이 샘 (혼합 복수)'
 
 AskLocationString = u'위치가 어디신가요?'
@@ -463,8 +468,8 @@ AskTableNumberString = u'테이블이 어디신가요?\n0:이전 메뉴'
 AskPartString = u'어떤 부분이 문제인가요?'
 AskDeviceString = u'어떤 기계가 문제인가요?'
 AskSymtomString = u'어떤 증상인가요?'
-AskMultiSymtomString = u'어떤 증상인가요?(복수, 직접 입력 가능)\nex) 1,3,물이 샘\n\n0:이전 메뉴로 돌아가기'
-AskMultiSymtomString2 = u'어떤 증상인가요?\n\n0:이전 메뉴로 돌아가기'
+#AskMultiSymtomString = u'어떤 증상인가요?(복수, 직접 입력 가능)\nex) 1,3,물이 샘\n\n0:이전 메뉴로 돌아가기'
+AskMultiSymtomString = u'어떤 증상인가요?\n\n0:이전 메뉴로 돌아가기'
 InsertIDString = u'학번(혹은 사번)을 입력해주세요 ex)2011740011\n0:이전 메뉴'
 InsertNameString = u'이름을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
 ReInsertString = u'다시 입력해 주세요'
@@ -511,15 +516,15 @@ toStateMessageList = {    0x1:u'',
                           0x111111:AskPartString,            0x111141:AskPartString,                      0x1111311:AskPartString,            0x1111321:AskPartString,       
                           0x1111111:DirectInsertPartString,  0x1111411:DirectInsertPartString,            0x11113111:DirectInsertPartString,  0x11113211:DirectInsertPartString,
                           0x11111111:AskSymtomString ,       
-                          0x11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString ,                  
-                          0x11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString ,                                            
-                          0x11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString ,
-                          0x111131111:AskMultiSymtomString+u'\n'+ _DollSymptomJoinString,       
-                          0x111131112:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString,    
-                          0x111131113:AskMultiSymtomString+u'\n'+ _LightSymptomJoinString,
-                          0x111131114:AskMultiSymtomString+u'\n'+ _3WaySymptomJoinString,
-                          0x111131115:AskMultiSymtomString+u'\n'+ _HighspeedConnectorSymptomJoinString,
-                          0x111131116:AskMultiSymtomString+u'\n'+ _LowspeedConnectorSymptomJoinString ,        
+                          0x11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                  
+                          0x11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                                            
+                          0x11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,
+                          0x111131111:AskMultiSymtomString+u'\n'+ _DollSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,       
+                          0x111131112:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,    
+                          0x111131113:AskMultiSymtomString+u'\n'+ _LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
+                          0x111131114:AskMultiSymtomString+u'\n'+ _3WaySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
+                          0x111131115:AskMultiSymtomString+u'\n'+ _HighspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
+                          0x111131116:AskMultiSymtomString+u'\n'+ _LowspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,        
                           0x111132111:AskSymtomString,
                           0x111132112:AskSymtomString, 
                           0x11111112:AskSymtomString ,                                                   
@@ -722,77 +727,77 @@ def generate4EngStatesInformation() :
         _current_State = nx_Child_in(_current_State,1)
         toStateMessageList[ nx_Child_in(_current_State,2) ] = DirectInsertSymptomString
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 0 , 2)
-    #toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString2+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString  
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString
-    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
-    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+5] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
-    toStateMessageList[_current_State+6] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString
+
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString  
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+5] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+6] =  AskMultiSymtomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[0]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 1 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[1]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 2 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[2]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 3 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[3]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 4 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CastingmachineSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
-    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
-    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
     # len_devices_per_table[4]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 5 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CastingmachineSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
     # len_devices_per_table[5]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 6 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CastingmachineSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString    
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
     # len_devices_per_table[6]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 7 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CuringwaterbathSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_CuringwaterbathSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString   
-    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString   
-    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_CuringwaterbathSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
+    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
+    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[7]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 8 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString   
-    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString   
-    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
+    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
+    toStateMessageList[_current_State+4] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[8]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 9 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString
-    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[9]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 10 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[10]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 11 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString
-    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString    
-    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString
-    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString
+    toStateMessageList[_current_State+0] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+1] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toStateMessageList[_current_State+2] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toStateMessageList[_current_State+3] =  AskMultiSymtomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
     # len_devices_per_table[11]?
 
 Error_NoInt     = 0x9
@@ -867,9 +872,7 @@ def generateOrganization( _org)  :
                 _org[tokens[0]][NameString ] = tokens[2]
         f.close()   
 
-
-
-emailToList = []
+emailToOfficeList = []
 emailForwardingList = []
 emailAdminList = []
 emailMulti_rofile_path = u'static/email2.txt'
@@ -888,8 +891,6 @@ def generateMultiEmailToList( _email2list, _emailfowardinglist, _emailadminlist)
         for i in range(1,len(tokens)) : 
             _emailadminlist.append(tokens[i])
         f.close()
-
-
 
 gmailUserString = u'ID'
 gmailPasswordString = u'Password'
@@ -1013,9 +1014,10 @@ def isValidID( number ) :
     return False 
 
 class SummaryText :
-    def  __init__(self, mText = '' ) :
+    def  __init__(self, mText = '' , mTextGroup = {} ) :
         self.mText = u'' 
-    
+        self.mTextGroup = {} 
+
     def  _generate(self, _TextMessage,_organization,_instance, _UserRequestKey, _key1=None, _OnlyPart=False) :
         self.mText += _TextMessage
         if _OnlyPart == False :
@@ -1056,20 +1058,74 @@ class SummaryText :
         for _key0 in _sumins_org_regrouping :
             self.mText += u'[['+ _key0    +u']]\n'
             for _key1 in _sumins_org_regrouping[_key0] :
-                self.mText += u'['+ _key1    +u']\n'
+#                self.mText += u'['+ _key1    +u']\n'
                 for _ins in _sumins_org_regrouping[_key0][_key1] :
-                    self.mText += _ins[PartString] + u'\t'+_ins[SymtomString] + u'\t'+ str(_ins[IDString])+u'\n'
+                    self.mText += _key1+u'번\t'+_ins[PartString] + u'\t'+_ins[SymtomString] + u'\t'+ str(_ins[IDString])+u'\n'
         return self.mText
 
-def mail( to, subject, body, attach=None):
+    def _genRegrouped2(self, _organization, _sum_instance) :
+
+        _sumins_org_regrouping = {}
+        for _userkey in _sum_instance.keys() :
+            if _userkey not in _organization :
+                continue
+            for  _ins in  _sum_instance[_userkey]  : 
+                if  _ins[LocationString]  not in  _sumins_org_regrouping :
+                    _sumins_org_regrouping[ _ins[LocationString] ] = {}
+                if  _ins[SeatNumberString] not in _sumins_org_regrouping[_ins[LocationString]] :
+                    _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]] = []
+                if  _ins[LocationString]  not in self.mTextGroup :
+                    self.mTextGroup[_ins[LocationString]] = u''
+                _element = { 'user_key':_userkey }
+                _element[IDString]     = _organization[_userkey][IDString]
+                _element[NameString]   = _organization[_userkey][NameString]
+                _element[SymtomString] = _ins[SymtomString]
+                _element[PartString]   = _ins[PartString]
+                _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
+        for _key0 in _sumins_org_regrouping :
+#            self.mText += u'[['+ _key0    +u']]\n'
+            for _key1 in _sumins_org_regrouping[_key0] :
+                for _ins in _sumins_org_regrouping[_key0][_key1] :
+                    self.mTextGroup[_key0] += _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymtomString] +u'\n'
+        return self.mTextGroup
+
+
+
+original_request_xlsx_file = u'static/original_request_office.xlsx'
+target_request_xlsx_file          = u'static/target.xlsx'
+def mail( to, subject, body, attachlist=None):
     gmail_user = gmailInformation[gmailUserString]
     gmail_password = gmailInformation[gmailPasswordString]
-    
-    email_text = MIMEText( body , _charset="UTF-8")
-    email_text['Subject'] = subject
 
+    if attachlist is None :    
+        email_text = MIMEText( body , _charset="UTF-8")
+    else :
+        final_attachlist = []
+        #attachlist = []
+        for _element in attachlist :
+            if  len(_element) == 2 :
+                if  os.path.exists(_element[0])  :
+                    fp = open(_element[0], 'rb')
+                    part = MIMEBase('application', "octet-stream")
+                    part.set_payload(fp.read())
+                    fp.close()
+                    encoders.encode_base64(part)
+#                    part.add_header('Content-Disposition', 'attachment; filename="_target.xlsx"' )
+                    part.add_header('Content-Disposition', 'attachment' , filename=_element[1] )
+                    final_attachlist.append(part)
+
+
+        email_text = MIMEMultipart()
+        part1 = MIMEText( body , _charset="UTF-8")
+        email_text.attach(part1)
+        for _element in final_attachlist :
+            email_text.attach(_element)
+
+
+    email_text['Subject'] = subject
     email_text['From'] = gmail_user
     email_text['To'] = u", ".join(to)
+
 
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.ehlo()
@@ -1079,7 +1135,7 @@ def mail( to, subject, body, attach=None):
     server.close()
 
 
-time_to_email = [ 8 ]  #7  ?
+time_to_email = [ 8 ]  #8  ?
 time_difference = 9
 min2prepare = 10
 def _calcTimer() :
@@ -1089,71 +1145,78 @@ def _calcTimer() :
     y = x.replace(hour=cloud_mail_hour, minute=0, second=0, microsecond=0)
     if  datetime.now() +  timedelta(minutes=min2prepare) >= y :    
         y += timedelta(days=1)      
+    #######    y=x.replace(day=x.day, hour=(x.hour+1)%24, minute=0, second=0, microsecond=0)    ### for test
     delta_t=y-x
     secs=delta_t.seconds+1
     return secs
 
+requester_name = u'신청스'
+requester_phone = u'010-0001-0001'
+class MailBodyandAttachment :
+    def  __init__(self, mBody = u'' , mAttachmentList = [] ) :
+        self.mBody = u'' 
+        self.mAttachmentList = []  
+    def prepare(self) :
 
-def periodic_mail_forwarding()  :    
-    to = emailToList 
-    body = SummaryText()._genRegrouped(u'', organization, sum_instance)
+        shutil.copy( original_request_xlsx_file,target_request_xlsx_file)
+        _TextGroup = SummaryText()._genRegrouped2( organization, sum_instance )
+        excel_document = load_workbook(filename = target_request_xlsx_file)
+        source = excel_document.get_sheet_by_name('Sheet1')
+        #source = excel_document.active
+        source['B5'] = unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )
+        source['D5'] = requester_name 
+        source['F5'] = requester_phone             
+
+        for _key in  _TextGroup.keys() :
+            self.mBody += u'[['+ _key  +u']]\n'
+            self.mBody += _TextGroup[_key]          
+
+            target = excel_document.copy_worksheet( source )
+            target.title = _key[2:]  
+            target['B4'] = _key[2:] 
+            target['A7'] = _TextGroup[_key]
+        excel_document.remove_sheet(source)
+        excel_document.save(filename = target_request_xlsx_file)
+
+        daily_filename = u'request('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u').xlsx'.encode('utf-8')
+        self.mAttachmentList.append( [target_request_xlsx_file , daily_filename ] )
+        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'4층실습실_자리배치도.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'3층실습실_자리배치도.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/3com_seats.png',  u'3층컴퓨터실_자리배치도.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4eng_tables.png', u'4층기공실_탁자배치도.png'.encode('utf-8')] )
+
+    def getBody(self) :
+        return self.mBody
+    def getAttachmentList(self) :
+        return self.mAttachmentList
+
+def periodic_mail_forwarding()  :   
+
+
+
+    
+    m = MailBodyandAttachment()
+    m.prepare()
+
+    to = emailToOfficeList 
     #this is yesterday's summary
-    subject = u'실습실 고장 목록입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
-    mail(to, subject , body.encode('utf-8') )        
+    #subject = u'실습실 수리 신청입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
+    subject = u'실습실 수리 신청입니다('+unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
 
-#######    y=x.replace(day=x.day, hour=(x.hour+1)%24, minute=0, second=0, microsecond=0)
-    mail_hour = time_to_email[0]%24
-    x=datetime.today()
-#    if mail_hour in range(0,9) :
-    if mail_hour in range(0,time_difference) :
-        y=x.replace(day=x.day+1, hour=mail_hour+(24-time_difference ), minute=0, second=0, microsecond=0)
-#        y=x.replace(day=x.day+1, hour=mail_hour+15, minute=0, second=0, microsecond=0)
-    else :  # range(9.24)
-        y=x.replace(day=x.day+1, hour=mail_hour- time_difference  , minute=0, second=0, microsecond=0)
-#        y=x.replace(day=x.day+1, hour=mail_hour-9, minute=0, second=0, microsecond=0)
-
-    delta_t=y-x
-
-    secs=delta_t.seconds+1
+    #mail(to, subject , body.encode('utf-8') )        
+    mail(to, subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
 
     t = Timer( _calcTimer(), periodic_mail_forwarding)
     t.start()
 
 
 def hello_world() :
-    #to = [ 'kws015@hanmail.net' ]
-##    to = emailToList 
-    #subject =  'My first email through python flask'
-##    subject =  u'My first email through python flask'
-    #body = 'this is all for Timer \n'    
-##    body = u'this is all for Timer \n'
-    #mail(to, subject , body)  
-    x=datetime.today()
-#######    y=x.replace(day=x.day, hour=(x.hour+1)%24, minute=0, second=0, microsecond=0)
-    mail_hour = time_to_email[0]%24
-    if mail_hour in range(0,time_difference) :
-        if x.hour < mail_hour +(24-time_difference ) :
-            y=x.replace(day=x.day, hour=mail_hour+(24-time_difference ), minute=0, second=0, microsecond=0)
-        else :
-            y=x.replace(day=x.day+1, hour=mail_hour+(24-time_difference ), minute=0, second=0, microsecond=0)
-    else :  # range(9.24)
-        if x.hour < mail_hour -time_difference :
-            y=x.replace(day=x.day, hour=mail_hour-time_difference, minute=0, second=0, microsecond=0)
-        else :
-            y=x.replace(day=x.day+1, hour=mail_hour-time_difference, minute=0, second=0, microsecond=0)
-    delta_t=y-x
-
-##    body += str(y.day) + '/'+ str(y.hour)+'\n'
-##    mail(to, subject , body)    
-
-    secs=delta_t.seconds+1
-
     s = Timer( _calcTimer() , periodic_mail_forwarding)
     s.start()
 
 generate4EngStatesInformation()
 generateOrganization(organization)
-generateMultiEmailToList(emailToList, emailForwardingList, emailAdminList)
+generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
 generateEmailFrom(gmailInformation)
 
 hello_world()
@@ -1587,7 +1650,7 @@ def GetMessage():
             return Arrow().make_Message_Button_change_State(currentState,  prev_Parent(currentState,1) , userRequest)
 
     elif  instance[userRequest['user_key']][StateString] == nx_Child_Sibling( nx_Child_Sibling( initial_State ,1,3) ,1,4)  :
-        currentState = instance[userRequest['user_key']][StateString]              
+        currentState = instance[userRequest['user_key']][StateString]
         if  os.path.exists(pass_rofile_path)  :
             f = open( pass_rofile_path , 'r')
             p = f.readline().strip()
@@ -1611,6 +1674,28 @@ def GetMessage():
                     f.close()
 
                 _textMessage += SummaryText()._genRegrouped(u'---instances-----------\n', organization, sum_instance)
+
+
+                shutil.copy( original_request_xlsx_file,target_request_xlsx_file)
+                _TextGroup = SummaryText()._genRegrouped2( organization, sum_instance )
+                excel_document = load_workbook(filename = target_request_xlsx_file)
+
+                source = excel_document.get_sheet_by_name('Sheet1')
+                #source = excel_document.active
+                source['B5'] = unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )
+
+                source['D5'] = u'신청자' 
+                source['F5'] = u'010-0001-0001'            
+
+                for _key in  _TextGroup.keys() :
+                    target = excel_document.copy_worksheet( source )
+                    target.title = _key[2:]  
+                    target['B4'] = _key[2:] 
+                    target['A7'] = _TextGroup[_key]
+
+                excel_document.remove_sheet(source)
+                excel_document.save(filename = target_request_xlsx_file)
+
                 #to = emailToList
                 to = emailAdminList 
                 #subject =  u'My 0th email through python flask'
@@ -1618,8 +1703,17 @@ def GetMessage():
                 subject = u'전체고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
                 #body = 'this is all for you\n'
                 body = _textMessage.encode('utf-8')
+
+                daily_filename = u'request('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u').xlsx'
+                attachment_list = [
+                   [target_request_xlsx_file , daily_filename ],
+                   [ u'static/images/4work_seats.png', u'4층실습실_자리배치도.png'.encode('utf-8')],
+                   [ u'static/images/4work_seats.png', u'3층실습실_자리배치도.png'.encode('utf-8')],
+                   [ u'static/images/3com_seats.png',  u'3층컴퓨터실_자리배치도.png'.encode('utf-8')],
+                   [ u'static/images/4eng_tables.png', u'4층기공실_탁자배치도.png'.encode('utf-8')]
+                ] 
                 try:
-                    mail(to, subject , body)
+                    mail(to, subject , body,  attachment_list )
 
                 except smtplib.SMTPAuthenticationError : 
                     _textMessage += u'something went wrong1' 
