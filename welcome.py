@@ -32,7 +32,7 @@ from openpyxl.drawing.image import Image
 
 app = Flask(__name__)
 
-VersionString = u'0.88'
+VersionString = u'0.89'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -516,9 +516,12 @@ toStateMessageList = {    0x1:u'',
                           0x111111:AskPartString,            0x111141:AskPartString,                      0x1111311:AskPartString,            0x1111321:AskPartString,       
                           0x1111111:DirectInsertPartString,  0x1111411:DirectInsertPartString,            0x11113111:DirectInsertPartString,  0x11113211:DirectInsertPartString,
                           0x11111111:AskSymtomString ,       
-                          0x11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                  
-                          0x11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                                            
-                          0x11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,
+                          #0x11114111:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                  
+                          #0x11114112:AskMultiSymtomString+u'\n'+ _CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                                            
+                          #0x11114113:AskMultiSymtomString+u'\n'+ _ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,
+                          0x11114111:AskSymtomString ,                  
+                          0x11114112:AskSymtomString ,                                            
+                          0x11114113:AskSymtomString ,
                           0x111131111:AskMultiSymtomString+u'\n'+ _DollSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,       
                           0x111131112:AskMultiSymtomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,    
                           0x111131113:AskMultiSymtomString+u'\n'+ _LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
@@ -1037,32 +1040,6 @@ class SummaryText :
             self.mText += u'symptom    :' + _instance[ _UserRequestKey ][_key1][SymtomString]+u'\n'
         return self.mText
 
-    def _genRegrouped(self, _TextMessage,_organization, _sum_instance) :
-        self.mText += _TextMessage
-
-        _sumins_org_regrouping = {}
-        for _userkey in _sum_instance.keys() :
-            if _userkey not in _organization :
-                continue
-            for  _ins in  _sum_instance[_userkey]  : 
-                if  _ins[LocationString]  not in  _sumins_org_regrouping :
-                    _sumins_org_regrouping[ _ins[LocationString] ] = {}
-                if  _ins[SeatNumberString] not in _sumins_org_regrouping[_ins[LocationString]] :
-                    _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]] = []
-                _element = { 'user_key':_userkey }
-                _element[IDString]     = _organization[_userkey][IDString]
-                _element[NameString]   = _organization[_userkey][NameString]
-                _element[SymtomString] = _ins[SymtomString]
-                _element[PartString]   = _ins[PartString]
-                _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
-        for _key0 in _sumins_org_regrouping :
-            self.mText += u'[['+ _key0    +u']]\n'
-            for _key1 in _sumins_org_regrouping[_key0] :
-#                self.mText += u'['+ _key1    +u']\n'
-                for _ins in _sumins_org_regrouping[_key0][_key1] :
-                    self.mText += _key1+u'번\t'+_ins[PartString] + u'\t'+_ins[SymtomString] + u'\t'+ str(_ins[IDString])+u'\n'
-        return self.mText
-
     def _genRegrouped2(self, _organization, _sum_instance) :
 
         _sumins_org_regrouping = {}
@@ -1089,6 +1066,14 @@ class SummaryText :
                     self.mTextGroup[_key0] += _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymtomString] +u'\n'
         return self.mTextGroup
 
+    def showOrgFile(self)  :
+        if os.path.exists(org_rwfile_path) :
+            f = open( org_rwfile_path , 'r') 
+            lines = f.readlines()
+            for line in lines :
+                self.mText += line.decode('utf-8')    
+            f.close()      
+        return self.mText
 
 
 original_request_xlsx_file = u'static/original_request_office.xlsx'
@@ -1150,16 +1135,18 @@ def _calcTimer() :
     secs=delta_t.seconds+1
     return secs
 
-requester_name = u'신청스'
-requester_phone = u'010-0001-0001'
+requester_name = u'강신청'
+requester_phone = u'010-0001-0005'
 class MailBodyandAttachment :
     def  __init__(self, mBody = u'' , mAttachmentList = [] ) :
         self.mBody = u'' 
         self.mAttachmentList = []  
     def prepare(self) :
 
-        shutil.copy( original_request_xlsx_file,target_request_xlsx_file)
         _TextGroup = SummaryText()._genRegrouped2( organization, sum_instance )
+        if  len(_TextGroup.keys()) == 0 :
+            return False
+        shutil.copy( original_request_xlsx_file,target_request_xlsx_file)
         excel_document = load_workbook(filename = target_request_xlsx_file)
         source = excel_document.get_sheet_by_name('Sheet1')
         #source = excel_document.active
@@ -1184,35 +1171,58 @@ class MailBodyandAttachment :
         self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'3층실습실_자리배치도.png'.encode('utf-8')] )
         self.mAttachmentList.append( [ u'static/images/3com_seats.png',  u'3층컴퓨터실_자리배치도.png'.encode('utf-8')] )
         self.mAttachmentList.append( [ u'static/images/4eng_tables.png', u'4층기공실_탁자배치도.png'.encode('utf-8')] )
+        return True
 
     def getBody(self) :
         return self.mBody
     def getAttachmentList(self) :
         return self.mAttachmentList
 
+
+def Org2File( _organization, _file) :
+    f = open( _file , 'w')
+    for key in _organization.keys() :
+        _line = key  + u'  '+ str(_organization[key][IDString]) + u'  '+ _organization[key][NameString] + u'\n'
+        if  isinstance(_line, unicode) :
+            f.write(_line.encode('utf-8')) 
+    f.close()    
+
 def periodic_mail_forwarding()  :   
-
-
-
-    
-    m = MailBodyandAttachment()
-    m.prepare()
-
-    to = emailToOfficeList 
-    #this is yesterday's summary
-    #subject = u'실습실 수리 신청입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
-    subject = u'실습실 수리 신청입니다('+unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
-
-    #mail(to, subject , body.encode('utf-8') )        
-    mail(to, subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
-
-    t = Timer( _calcTimer(), periodic_mail_forwarding)
-    t.start()
+    try :
+        m = MailBodyandAttachment()
+        m.prepare()
+    except :
+        mail( emailAdminList, u'periodic_mail_case1', u'check'.encode('utf-8'))
+    try :
+        #this is yesterday's summary
+        #subject = u'실습실 수리 신청입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
+        subject = u'실습실 수리 신청입니다('+unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
+        #mail(to, subject , body.encode('utf-8') )        
+        mail( emailToOfficeList, subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
+    except :
+        mail( emailAdminList, u'periodic_mail_case2', u'check'.encode('utf-8'))
+    try :
+        sum_instance.clear()  #clear sum_instance 
+        Org2File(organization, org_rwfile_path)  # organization to organization file
+        _textMessage = str(sum_instance) + u'\n'
+        _textMessage += SummaryText().showOrgFile()
+        mail(emailAdminList, u'after periodic mail', _textMessage.encode('utf-8') )  #check sum_instance and organization file
+    except :
+        mail( emailAdminList, u'periodic_mail_case3', u'check'.encode('utf-8'))
+    try :
+        t = Timer( _calcTimer(), periodic_mail_forwarding)
+        t.start()
+    except :
+        mail( emailAdminList, u'periodic_mail_case4', u'check'.encode('utf-8'))
 
 
 def hello_world() :
-    s = Timer( _calcTimer() , periodic_mail_forwarding)
-    s.start()
+    try : 
+        s = Timer( _calcTimer() , periodic_mail_forwarding)
+        s.start()
+    except :
+        mail( emailAdminList, u'hello_world_case0', u'check'.encode('utf-8'))
+
 
 generate4EngStatesInformation()
 generateOrganization(organization)
@@ -1673,47 +1683,18 @@ def GetMessage():
                         _textMessage += line.decode('utf-8')    
                     f.close()
 
-                _textMessage += SummaryText()._genRegrouped(u'---instances-----------\n', organization, sum_instance)
+                m = MailBodyandAttachment()
+                m.prepare()
 
+                _textMessage += m.getBody()
 
-                shutil.copy( original_request_xlsx_file,target_request_xlsx_file)
-                _TextGroup = SummaryText()._genRegrouped2( organization, sum_instance )
-                excel_document = load_workbook(filename = target_request_xlsx_file)
-
-                source = excel_document.get_sheet_by_name('Sheet1')
-                #source = excel_document.active
-                source['B5'] = unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )
-
-                source['D5'] = u'신청자' 
-                source['F5'] = u'010-0001-0001'            
-
-                for _key in  _TextGroup.keys() :
-                    target = excel_document.copy_worksheet( source )
-                    target.title = _key[2:]  
-                    target['B4'] = _key[2:] 
-                    target['A7'] = _TextGroup[_key]
-
-                excel_document.remove_sheet(source)
-                excel_document.save(filename = target_request_xlsx_file)
-
-                #to = emailToList
                 to = emailAdminList 
-                #subject =  u'My 0th email through python flask'
-                #subject =  u'전체고장'.encode('utf-8')
                 subject = u'전체고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
                 #body = 'this is all for you\n'
                 body = _textMessage.encode('utf-8')
 
-                daily_filename = u'request('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u').xlsx'
-                attachment_list = [
-                   [target_request_xlsx_file , daily_filename ],
-                   [ u'static/images/4work_seats.png', u'4층실습실_자리배치도.png'.encode('utf-8')],
-                   [ u'static/images/4work_seats.png', u'3층실습실_자리배치도.png'.encode('utf-8')],
-                   [ u'static/images/3com_seats.png',  u'3층컴퓨터실_자리배치도.png'.encode('utf-8')],
-                   [ u'static/images/4eng_tables.png', u'4층기공실_탁자배치도.png'.encode('utf-8')]
-                ] 
                 try:
-                    mail(to, subject , body,  attachment_list )
+                    mail(to, subject , body,  m.getAttachmentList() )
 
                 except smtplib.SMTPAuthenticationError : 
                     _textMessage += u'something went wrong1' 
