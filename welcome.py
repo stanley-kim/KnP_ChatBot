@@ -29,10 +29,11 @@ import shutil
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image
 
+import re
 
 app = Flask(__name__)
 
-VersionString = u'0.90'
+VersionString = u'0.91'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -460,7 +461,8 @@ UnderConstructionString =u'-Under Construction-'
 UnInsertedString = u'필수 항목인 학번(혹은 사번)이 입력되지 않았습니다.'
 SameButtonString = u'중복 입력입니다'
 ExplainSymptomInsertionString = u'----------------------------------------\n'
-ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
+ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1 2\n\t\t 물이 샘\n\t\t 1 2 물이 샘'
+#ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
 #ExplainSymptomInsertionString +=u'ex) 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
 #ExplainSymptomInsertionString +=u'단/복수 입력이 가능합니다.\nex) 2 (객관식 단수)\n\t\t물이 샘 (주관식 단수)\n\t\t1,2 (객관식 복수)\n\t\t1,2,물이 샘 (혼합 복수)'
 
@@ -1525,13 +1527,33 @@ def GetMessage():
                 list(range(nx_Child(first_3work_State,3)+0, nx_Child(first_3work_State ,3)+ len_3work_part-2 )) + \
                 _4EngSymptomStateList :   
             currentState = instance[userRequest['user_key']][StateString] 
-            #instance[userRequest['user_key']]['symptom'] 
             _textMultiChoice = u'' 
-            tokens =  userRequest['content'].split(",")   
+
+            #tokens = re.split(r'(\s|\,)', userRequest['content'] )
+            tokens = re.split(r'(\s*\,\s*|\s+)', userRequest['content'] )
+
+            ###_textMultiChoice = str(tokens)+u'\n'
             if  len(tokens) == 1 and \
                 tokens[0].strip().isdigit() and \
                 int ( tokens[0].strip() ) == 0 :
                     return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)              
+            for i  in  range( 1, len(tokens)-1 )  :
+#                    if bool (   re.match( r'\s|\,' , tokens[i] ) ) :
+                if bool (   re.match( r'\s*\,\s*|\s+' , tokens[i] ) ) :
+                    if tokens[i-1].strip().isdigit()  :
+#                            if  bool (   re.match( r'\s|\,' , tokens[i+1] ) ) :
+                        if  bool (   re.match( r'\s*\,\s*|\s+' , tokens[i+1] ) ) :
+                            continue 
+                        else :
+                            tokens[i] =  u','
+                    elif tokens[i+1].strip().isdigit() :
+#                            if  bool (   re.match( r'\s|\,' , tokens[i-1] ) ) :
+                        if  bool (   re.match( r'\s*\,\s*|\s+' , tokens[i-1] ) ) :
+                            continue 
+                        else :
+                            tokens[i] =  u','
+            ###_textMultiChoice  +=str(tokens)+u'\n'
+
             lookup_table = []
             for token in tokens :
                 if token.strip().isdigit() : 
@@ -1546,9 +1568,8 @@ def GetMessage():
                         _textMessage = token.strip()+SelectString+u'\n'+ InsertValidNumberString
                         return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
                 else :
-                    _textMultiChoice += token.strip()
-                if  token != tokens[-1] :
-                    _textMultiChoice += u', '
+                    _textMultiChoice += token
+
             _MaxSymptomLen = 100 
             TooLongString = u'너무 깁니다'
             if len(_textMultiChoice) > _MaxSymptomLen :
