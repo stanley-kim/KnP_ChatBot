@@ -32,7 +32,7 @@ from openpyxl.drawing.image import Image
 
 app = Flask(__name__)
 
-VersionString = u'0.89'
+VersionString = u'0.90b'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -215,7 +215,8 @@ _3WaySymptomJoinString = u'\n'.join(_3WaySymptomMultiChoiceList)
 
 
 _HighspeedConnectorSymptomMultiChoiceList = [
-      u'1:Connector 없음'  
+      u'1:Connector 없음'  ,
+      u'2:물 잠깐 나오다 안 나옴',             
 ]
 _HighspeedConnectorSymptomJoinString = u'\n'.join(_HighspeedConnectorSymptomMultiChoiceList)
 
@@ -457,6 +458,7 @@ SubmitString = u'접수되었습니다.'
 CancelString = u'취소되었습니다'
 UnderConstructionString =u'-Under Construction-'
 UnInsertedString = u'필수 항목인 학번(혹은 사번)이 입력되지 않았습니다.'
+SameButtonString = u'중복 입력입니다'
 ExplainSymptomInsertionString = u'----------------------------------------\n'
 ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
 #ExplainSymptomInsertionString +=u'ex) 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
@@ -961,7 +963,7 @@ class  Arrow :
             _Photo["width"] = StatePhotoList[_toState]["width"]
             _Photo["height"] = StatePhotoList[_toState]["height"]
         else :
-            _PhotoFlag = False
+            _PhotoFlag = False        
         return self._make_Messages_change_State(True, _textMessage , _PhotoFlag , _Photo  , False , {} , _ButtonFlag , _fromState, _toState, _userRequest)
 
 
@@ -1228,7 +1230,6 @@ generate4EngStatesInformation()
 generateOrganization(organization)
 generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
 generateEmailFrom(gmailInformation)
-
 hello_world()
 
 @app.route('/')
@@ -1240,14 +1241,23 @@ def WelcomeToMyapp():
     return 'Welcome again to my app running on Bluemix!!'
 
 @app.route('/keyboard')
-def Keyboard():    
-    ItemList = {
-        'type': 'buttons', 'buttons' : StateButtonList[initial_State]
-    }    
-    return jsonify(ItemList)
+def Keyboard():
+    try :    
+        ItemList = {
+            'type': 'buttons', 'buttons' : StateButtonList[initial_State]
+        }    
+        return jsonify(ItemList)
+    except Exception as ex :
+        log = str(ex)
+        ItemList = {
+            'type': 'buttons', 'buttons' : [ log ]
+        }    
+        return jsonify(ItemList)
+
 
 @app.route('/message', methods=['POST'])
 def GetMessage():
+    try :
     userRequest = json.loads(request.get_data()) 
 
     # if its a 1st message, you have to make instance
@@ -1729,6 +1739,9 @@ def GetMessage():
     textContent = {"text":text}
     textMessage = {"message":textContent}
     return jsonify(textMessage)
+    except Exception as ex :
+                return  Arrow()._make_Message_Button_change_State(True,  str(ex) , True,  currentState,initial_State, userRequest)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
