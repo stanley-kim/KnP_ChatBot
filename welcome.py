@@ -33,7 +33,7 @@ import re
 
 app = Flask(__name__)
 
-VersionString = u'0.91'
+VersionString = u'0.92'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -52,7 +52,7 @@ _State1KeyList = [
 
   
 _State4KeyList = [
-      u'1.학번(혹은 사번) 및 이름 입력',
+      u'1.학번(혹은 사번) 및 이름 입력/수정',
       u'2.학번(혹은 사번) 및 이름 삭제' ,
       u'3.Forwarding 신청' , 
       u'4.Forwarding 해제 신청' , 
@@ -475,7 +475,7 @@ AskSymtomString = u'어떤 증상인가요?'
 #AskMultiSymtomString = u'어떤 증상인가요?(복수, 직접 입력 가능)\nex) 1,3,물이 샘\n\n0:이전 메뉴로 돌아가기'
 AskMultiSymtomString = u'어떤 증상인가요?\n\n0:이전 메뉴로 돌아가기'
 InsertIDString = u'학번(혹은 사번)을 입력해주세요 ex)2011740011\n0:이전 메뉴'
-InsertNameString = u'이름을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
+InsertNameString = u'이름(혹은 별명)을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
 ReInsertString = u'다시 입력해 주세요'
 InsertYesNoString = u'입력하시겠습니까?'
 LastYesNoString = u'최종 접수하시겠습니까'
@@ -1356,8 +1356,7 @@ def GetMessage():
         elif   instance[userRequest['user_key']][StateString]  == nx_Child( first_Independent_IDInsert_State, 2 ) : #14111
             currentState = instance[userRequest['user_key']][StateString]   
             if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
-                if  userRequest['user_key'] in temp_organization and \
-                    userRequest['user_key'] not in  organization :
+                if  userRequest['user_key'] in temp_organization :
                     organization[userRequest['user_key']] = { IDString :  temp_organization[userRequest['user_key']][IDString]    }
                     organization[userRequest['user_key']][NameString] = temp_organization[userRequest['user_key']][NameString]   
                     temp_organization.pop( userRequest['user_key'] ,  None)
@@ -1401,11 +1400,11 @@ def GetMessage():
             if  userRequest['content']  ==  StateButtonList[currentState][0] :
                 if  userRequest['user_key'] in organization :
                     key = userRequest['user_key']
-                    _text_  = u'이미 입력된 ID와 Name이 있습니다.'
-                    _text_ += u'새로 입력하시려면 기존 ID와 Name을 먼저 삭제하고 입력해주세요.'+u'\n'
+                    _text_  = u'이미 입력된 ID와 Name이 있습니다.'+u'\n'
                     _text_ += u'기존 ID   :'+ str(organization[key][IDString])+u'\n'
-                    _text_ += u'기존 Name :'+ organization[key][NameString]+u'\n'
-                    return Arrow()._make_Message_Button_change_State(True, _text_, True, currentState, currentState , userRequest )            
+                    _text_ += u'기존 Name :'+ organization[key][NameString]+u'\n\n'
+                    _text_ += toStateMessageList[first_Independent_IDInsert_State]+u'\n'
+                    return Arrow()._make_Message_Button_change_State(True, _text_, False, currentState, first_Independent_IDInsert_State , userRequest )            
 
                     #fill this later. for one user multi device case
                     #elif organization[key]['ID'] == temp_organization[userRequest['user_key']]['ID'] :
