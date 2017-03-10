@@ -33,7 +33,7 @@ import re
 
 app = Flask(__name__)
 
-VersionString = u'0.92'
+VersionString = u'0.93'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -207,6 +207,12 @@ _DollSymtomMultiChoiceList = [
 ]
 _DollSymptomJoinString = u'\n'.join(_DollSymtomMultiChoiceList)
 
+_3WaySymptomKeyList = [ 
+      u'1:물 안 나옴' ,
+      u'2:에어 안 나옴' ,
+      u'3:증상 직접 입력',
+      u'이전 메뉴'        
+]
 
 _3WaySymptomMultiChoiceList = [ 
       u'1:물 안 나옴' ,
@@ -215,11 +221,23 @@ _3WaySymptomMultiChoiceList = [
 _3WaySymptomJoinString = u'\n'.join(_3WaySymptomMultiChoiceList)
 
 
+_HighspeedConnectorSymptomKeyList = [
+      u'1:Connector 없음'  ,
+      u'2:물 잠깐 나오다 안 나옴',             
+      u'3:증상 직접 입력',
+      u'이전 메뉴'        
+]
 _HighspeedConnectorSymptomMultiChoiceList = [
       u'1:Connector 없음'  ,
       u'2:물 잠깐 나오다 안 나옴',             
 ]
 _HighspeedConnectorSymptomJoinString = u'\n'.join(_HighspeedConnectorSymptomMultiChoiceList)
+
+_LowspeedConnectorSymptomKeyList = [
+      u'1:Connector 없음' ,
+      u'2:증상 직접 입력',
+      u'이전 메뉴'        
+]
 
 _LowspeedConnectorSymptomMultiChoiceList = [
       u'1:Connector 없음' 
@@ -374,42 +392,97 @@ _TableSNListList = [
     _Table9SNList,  _Table10SNList,_Table11SNList,_Table12SNList         
 ]
 
+_SandblastSymptomKeyList  = [
+      u'1:전원이 안 켜짐'  ,
+      u'2:바람은 나오나 모래가 안 나옴', 
+      u'3:증상 직접 입력', 
+      u'이전 메뉴'       
+]
 
 _SandblastSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  ,
       u'2:바람은 나오나 모래가 안 나옴' 
 ]
 _SandblastSymptomJoinString = u'\n'.join(_SandblastSymptomMultiChoiceList)
+_VacuummixerSymptomKeyList = [
+      u'1:전원이 안 켜짐'  ,
+      u'2:비커가 회전이 안 됨', 
+      u'3:증상 직접 입력', 
+      u'이전 메뉴'       
+]
 _VacuummixerSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  ,
       u'2:비커가 회전이 안 됨' 
 ]
 _VacuummixerSymptomJoinString = u'\n'.join(_VacuummixerSymptomMultiChoiceList)
+_TrimmerSymptomKeyList = [
+      u'1:전원이 안 켜짐'  ,
+      u'2:날이 회전이 안 됨' , 
+      u'3:증상 직접 입력', 
+      u'이전 메뉴'       
+]
+
 _TrimmerSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  ,
       u'2:날이 회전이 안 됨' 
 ]
 _TrimmerSymptomJoinString = u'\n'.join(_TrimmerSymptomMultiChoiceList)
+_CastingmachineSymptomKeyList = [
+      u'1:전원이 안 켜짐'  , 
+      u'2:증상 직접 입력', 
+      u'이전 메뉴'       
+]
+
 _CastingmachineSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  
 ]
 _CastingmachineSymptomJoinString = u'\n'.join(_CastingmachineSymptomMultiChoiceList)
+_ElectricfurnaceSymptomKeyList = [
+      u'1:전원이 안 켜짐'  , 
+      u'2:증상 직접 입력', 
+      u'이전 메뉴'       
+]
+
 _ElectricfurnaceSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  
 ]
 _ElectricfurnaceSymptomJoinString = u'\n'.join(_ElectricfurnaceSymptomMultiChoiceList)
+_CuringwaterbathSymptomKeyList = [
+      u'1:전원이 안 켜짐'  , 
+      u'2:증상 직접 입력', 
+      u'이전 메뉴'       
+]
+
 _CuringwaterbathSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  
 ]
 _CuringwaterbathSymptomJoinString = u'\n'.join(_CuringwaterbathSymptomMultiChoiceList)
+_SteamcleanerSymptomKeyList = [
+      u'1:전원이 안 켜짐' , 
+      u'2:증상 직접 입력', 
+      u'이전 메뉴'        
+]
+
 _SteamcleanerSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  
 ]
 _SteamcleanerSymptomJoinString = u'\n'.join(_SteamcleanerSymptomMultiChoiceList)
+_DispenserSymptomKeyList = [
+      u'1:전원이 안 켜짐'  , 
+      u'2:증상 직접 입력', 
+      u'이전 메뉴'        
+]
+
 _DispenserSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  
 ]
 _DispenserSymptomJoinString = u'\n'.join(_DispenserSymptomMultiChoiceList)
+_PollcleanerSymptomKeyList = [
+      u'1:전원이 안 켜짐'  , 
+      u'2:증상 직접 입력', 
+      u'이전 메뉴'        
+]
+
 _PollcleanerSymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  
 ]
@@ -472,7 +545,6 @@ AskTableNumberString = u'테이블이 어디신가요?\n0:이전 메뉴'
 AskPartString = u'어떤 부분이 문제인가요?'
 AskDeviceString = u'어떤 기계가 문제인가요?'
 AskSymtomString = u'어떤 증상인가요?'
-#AskMultiSymtomString = u'어떤 증상인가요?(복수, 직접 입력 가능)\nex) 1,3,물이 샘\n\n0:이전 메뉴로 돌아가기'
 AskMultiSymtomString = u'어떤 증상인가요?\n\n0:이전 메뉴로 돌아가기'
 InsertIDString = u'학번(혹은 사번)을 입력해주세요 ex)2011740011\n0:이전 메뉴'
 InsertNameString = u'이름(혹은 별명)을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
@@ -1171,10 +1243,10 @@ class MailBodyandAttachment :
 
         daily_filename = u'request('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u').xlsx'.encode('utf-8')
         self.mAttachmentList.append( [target_request_xlsx_file , daily_filename ] )
-        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'4층실습실_자리배치도.png'.encode('utf-8')] )
-        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'3층실습실_자리배치도.png'.encode('utf-8')] )
-        self.mAttachmentList.append( [ u'static/images/3com_seats.png',  u'3층컴퓨터실_자리배치도.png'.encode('utf-8')] )
-        self.mAttachmentList.append( [ u'static/images/4eng_tables.png', u'4층기공실_탁자배치도.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'B403_Seats.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'B303_Seats.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/3com_seats.png',  u'B306_Seats.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4eng_tables.png', u'B404_Tables.png'.encode('utf-8')] )
         return True
 
     def getBody(self) :
