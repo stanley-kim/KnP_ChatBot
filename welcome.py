@@ -33,7 +33,7 @@ import re
 
 app = Flask(__name__)
 
-VersionString = u'0.96'
+VersionString = u'0.97'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -310,7 +310,12 @@ _ComnetworkSymptomMultiChoiceList = [
 
 _ComnetworkSymptomJoinString = u'\n'.join(_ComnetworkSymptomMultiChoiceList)
 
-
+_CombodySymptomKeyList = [
+      u'1:전원이 안 켜짐'  ,
+      u'2:부팅이 안 됨' ,
+      u'3:USB 인식을 못 함' ,
+      u'이전 메뉴'       
+]
 _CombodySymptomMultiChoiceList = [
       u'1:전원이 안 켜짐'  ,
       u'2:부팅이 안 됨' ,
@@ -530,10 +535,10 @@ _PollcleanerSymptomJoinString = u'\n'.join(_PollcleanerSymptomMultiChoiceList)
 StateMultiChoiceList = {
                 0x11111111: _LightSymptomMultiChoiceList  ,         0x11111112: _MonitorSymptomMultiChoiceList ,     0x11111113 : _GastorchSymptomMultiChoiceList , 
                 0x11111114: _HandpieceengineSymptomMultiChoiceList, 0x11111115: _AirinletSymptomMultiChoiceList,     0x11111116: _AiroutletSymptomMultiChoiceList ,  
-                0x11114111: _MonitorSymptomMultiChoiceList ,  0x11114112:_CombodySymptomMultiChoiceList ,  0x11114113:_ComnetworkSymptomMultiChoiceList,
                 0x111131111: _DollSymptomMultiChoiceList ,     0x111131112:_MonitorSymptomMultiChoiceList , 0x111131113:_LightSymptomMultiChoiceList ,  
                 0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomMultiChoiceList ,
-                0x111132111: _HighspeedHandpieceSymptomMultiChoiceList ,    0x111132112: _LowspeedHandpieceSymptomMultiChoiceList           
+                0x111132111: _HighspeedHandpieceSymptomMultiChoiceList ,    0x111132112: _LowspeedHandpieceSymptomMultiChoiceList   ,        
+                0x11114111: _MonitorSymptomMultiChoiceList ,  0x11114112:_CombodySymptomMultiChoiceList ,  0x11114113:_ComnetworkSymptomMultiChoiceList
 }
 
 StateButtonList = { 0x1: _State0KeyList, 
@@ -551,7 +556,7 @@ StateButtonList = { 0x1: _State0KeyList,
                  0x111131111: _DollSymptomKeyList ,     0x111131112:_MonitorSymptomKeyList , 0x111131113:_LightSymptomKeyList ,  
                  0x111131114:_3WaySymptomKeyList ,      0x111131115: _HighspeedConnectorSymptomKeyList   ,     0x111131116:_LowspeedConnectorSymptomKeyList ,
                  0x111132111: _HighspeedHandpieceSymptomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
-
+                 0x11114111: _MonitorSymptomKeyList ,  0x11114112:_CombodySymptomKeyList,  0x11114113:_ComnetworkSymptomKeyList ,
                  0x1111111111: _YesorNoKeyListv2,    0x1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
                  0x11113111111: _YesorNoKeyListv2,   0x11113211111: _YesorNoKeyListv2                      
 }
@@ -622,7 +627,8 @@ fromStateMessageList = {  0x1:SelectString+u'\n' ,
                           0x11111115:SelectString+u'\n' ,                                         0x111131115:SelectString+u'\n' ,
                           0x11111116:SelectString+u'\n' ,                                         0x111131116:SelectString+u'\n' ,
                           0x111111111:SelectString+u'\n' ,  0x111141111:SelectString+u'\n' ,      0x1111311111:SelectString+u'\n' ,   0x1111321111:SelectString+u'\n' ,     
-                          0x1111111111:SelectString+SubmitString+u'\n' ,0x1111411111:SelectString+SubmitString+u'\n' ,0x11113111111:SelectString+u'\n' ,0x11113211111:SelectString+u'\n' ,
+                          0x1111111111:SelectString+SubmitString+u'\n' ,0x1111411111:SelectString+SubmitString+u'\n' ,
+                          0x11113111111:SelectString+SubmitString+u'\n' ,0x11113211111:SelectString+SubmitString+u'\n' ,
                           0x141:SelectString+u'\n' ,        0x142:SelectString+u'\n' ,            0x143:SelectString+u'\n' ,         
                           0x145:SelectString+u'\n' ,          
                           0x1411:SelectString+ u'\n' ,                                            0x1451:SelectString+u'\n' ,
@@ -635,9 +641,6 @@ toStateMessageList = {    0x1:u'',
                           0x11111:AskSeatNumberString,       0x11114:AskSeatNumberString,                 0x111131:AskSeatNumberString,       0x111132:InsertCaseNumberString,                          
                           0x111111:AskPartString,            0x111141:AskPartString,                      0x1111311:AskPartString,            0x1111321:AskPartString,       
                           0x1111111:DirectInsertPartString,  0x1111411:DirectInsertPartString,            0x11113111:DirectInsertPartString,  0x11113211:DirectInsertPartString,
-                          #0x11114111:AskMultiSymptomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                  
-                          #0x11114112:AskMultiSymptomString+u'\n'+ _CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,                                            
-                          #0x11114113:AskMultiSymptomString+u'\n'+ _ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,
                           0x11114111:AskSymptomString ,                  
                           0x11114112:AskSymptomString ,                                            
                           0x11114113:AskSymptomString ,
@@ -676,7 +679,11 @@ toSymptomStateMessageListsList = {
                 0x111131115:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
                 0x111131116:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,       
                 0x111132111:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,    
-                0x111132112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString]    
+                0x111132112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
+                0x11114111: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,                  
+                0x11114112: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,                                            
+                0x11114113: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] 
+
 }
 
 push_StateList = {
@@ -838,6 +845,78 @@ def generate4EngStatesInformation() :
     StateMultiChoiceList[_current_State+2] =  _PollcleanerSymptomMultiChoiceList
     StateMultiChoiceList[_current_State+3] =  _PollcleanerSymptomMultiChoiceList
     # len_devices_per_table[11]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 0 , 2)
+    StateButtonList[_current_State+0] =  _SandblastSymptomKeyList
+    StateButtonList[_current_State+1] =  _SandblastSymptomKeyList  
+    StateButtonList[_current_State+2] =  _VacuummixerSymptomKeyList
+    StateButtonList[_current_State+3] =  _SandblastSymptomKeyList
+    StateButtonList[_current_State+4] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+5] =  _SandblastSymptomKeyList
+    StateButtonList[_current_State+6] =  _SandblastSymptomKeyList
+    # len_devices_per_table[0]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 1 , 2)
+    StateButtonList[_current_State+0] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+1] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+2] =  _TrimmerSymptomKeyList
+    # len_devices_per_table[1]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 2 , 2)
+    StateButtonList[_current_State+0] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+1] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+2] =  _TrimmerSymptomKeyList
+    # len_devices_per_table[2]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 3 , 2)
+    StateButtonList[_current_State+0] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+1] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+2] =  _TrimmerSymptomKeyList
+    # len_devices_per_table[3]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 4 , 2)
+    StateButtonList[_current_State+0] =  _CastingmachineSymptomKeyList
+    StateButtonList[_current_State+1] =  _ElectricfurnaceSymptomKeyList    
+    StateButtonList[_current_State+2] =  _ElectricfurnaceSymptomKeyList    
+    StateButtonList[_current_State+3] =  _ElectricfurnaceSymptomKeyList    
+    StateButtonList[_current_State+4] =  _ElectricfurnaceSymptomKeyList    
+    # len_devices_per_table[4]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 5 , 2)
+    StateButtonList[_current_State+0] =  _CastingmachineSymptomKeyList
+    StateButtonList[_current_State+1] =  _ElectricfurnaceSymptomKeyList    
+    StateButtonList[_current_State+2] =  _ElectricfurnaceSymptomKeyList    
+    # len_devices_per_table[5]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 6 , 2)
+    StateButtonList[_current_State+0] =  _CastingmachineSymptomKeyList
+    StateButtonList[_current_State+1] =  _ElectricfurnaceSymptomKeyList    
+    StateButtonList[_current_State+2] =  _ElectricfurnaceSymptomKeyList    
+    # len_devices_per_table[6]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 7 , 2)
+    StateButtonList[_current_State+0] =  _CuringwaterbathSymptomKeyList
+    StateButtonList[_current_State+1] =  _CuringwaterbathSymptomKeyList    
+    StateButtonList[_current_State+2] =  _SteamcleanerSymptomKeyList   
+    StateButtonList[_current_State+3] =  _SteamcleanerSymptomKeyList   
+    StateButtonList[_current_State+4] =  _CuringwaterbathSymptomKeyList
+    # len_devices_per_table[7]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 8 , 2)
+    StateButtonList[_current_State+0] =  _DispenserSymptomKeyList
+    StateButtonList[_current_State+1] =  _DispenserSymptomKeyList    
+    StateButtonList[_current_State+2] =  _SteamcleanerSymptomKeyList   
+    StateButtonList[_current_State+3] =  _VacuummixerSymptomKeyList   
+    StateButtonList[_current_State+4] =  _VacuummixerSymptomKeyList
+    # len_devices_per_table[8]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 9 , 2)
+    StateButtonList[_current_State+0] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+1] =  _VacuummixerSymptomKeyList    
+    StateButtonList[_current_State+2] =  _DispenserSymptomKeyList
+    StateButtonList[_current_State+3] =  _DispenserSymptomKeyList
+    # len_devices_per_table[9]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 10 , 2)
+    StateButtonList[_current_State+0] =  _TrimmerSymptomKeyList
+    StateButtonList[_current_State+1] =  _VacuummixerSymptomKeyList    
+    StateButtonList[_current_State+2] =  _SteamcleanerSymptomKeyList
+    # len_devices_per_table[10]?
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 11 , 2)
+    StateButtonList[_current_State+0] =  _PollcleanerSymptomKeyList
+    StateButtonList[_current_State+1] =  _PollcleanerSymptomKeyList    
+    StateButtonList[_current_State+2] =  _PollcleanerSymptomKeyList
+    StateButtonList[_current_State+3] =  _PollcleanerSymptomKeyList
+    # len_devices_per_table[11]?
 
     for i in range(len_tables)  :        
         pop_pushedStateList[nx_Child_in( nx_Child_in(first_4eng_State,1)+i ,3)] = True
@@ -868,78 +947,84 @@ def generate4EngStatesInformation() :
         toStateMessageList[ nx_Child_in(_current_State,1) ] = DirectInsertDeviceString
         _current_State = nx_Child_in(_current_State,1)
         toStateMessageList[ nx_Child_in(_current_State,2) ] = DirectInsertSymptomString
-    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 0 , 2)
 
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString  
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+3] =  AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+4] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+5] =  AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+6] =  AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    for i in range(len_tables)  :
+        _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + i , 2)
+        for j in range(len(len_devices_per_table)) :         
+            toStateMessageList[_current_State+j] =  AskSymptomString
+
+
+    _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 0 , 2)
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]  
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+3] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+4] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+5] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+6] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SandblastSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[0]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 1 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[1]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 2 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[2]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 3 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[3]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 4 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+3] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+4] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+3] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+4] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
     # len_devices_per_table[4]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 5 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
     # len_devices_per_table[5]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 6 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CastingmachineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ElectricfurnaceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
     # len_devices_per_table[6]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 7 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
-    toStateMessageList[_current_State+3] =  AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
-    toStateMessageList[_current_State+4] =  AskMultiSymptomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]   
+    toSymptomStateMessageListsList[_current_State+3] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]   
+    toSymptomStateMessageListsList[_current_State+4] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CuringwaterbathSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[7]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 8 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
-    toStateMessageList[_current_State+3] =  AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString   
-    toStateMessageList[_current_State+4] =  AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]   
+    toSymptomStateMessageListsList[_current_State+3] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]   
+    toSymptomStateMessageListsList[_current_State+4] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[8]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 9 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+3] =  AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+3] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DispenserSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[9]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 10 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_TrimmerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_VacuummixerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_SteamcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[10]?
     _current_State =  nx_Child_in( nx_Child_in(first_4eng_State,1) + 11 , 2)
-    toStateMessageList[_current_State+0] =  AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+1] =  AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString    
-    toStateMessageList[_current_State+2] =  AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
-    toStateMessageList[_current_State+3] =  AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString
+    toSymptomStateMessageListsList[_current_State+0] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+1] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]    
+    toSymptomStateMessageListsList[_current_State+2] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
+    toSymptomStateMessageListsList[_current_State+3] =  [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_PollcleanerSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ]
     # len_devices_per_table[11]?
 
 Error_NoInt     = 0x9
@@ -1683,13 +1768,16 @@ def GetMessage():
             instance[userRequest['user_key']][PartString] = userRequest['content']
             return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2), userRequest)
 
-        elif  instance[userRequest['user_key']][StateString] in range(nx_Child(first_4work_State,3)+0, nx_Child(first_4work_State,3)+ len_4work_part-2 )   or  \
-              instance[userRequest['user_key']][StateString] in range(nx_Child(first_3handpiece_State,3)+0, nx_Child(first_3handpiece_State,3)+ len_3handpiece_part-2 )  :
-    #          instance[userRequest['user_key']]['state'] in range(nx_Child(first_3com_State ,3)+1, nx_Child(first_3com_State ,3)+ len_3com_part-2 )  : 
-    #          instance[userRequest['user_key']]['state'] in range(nx_Child(first_3work_State,3)+0, nx_Child(first_3work_State ,3)+ len_3work_part-2 )  or  \
+        elif  instance[userRequest['user_key']][StateString] in \
+        list( range(nx_Child(first_4work_State,3)+0, nx_Child(first_4work_State,3)+ len_4work_part-2 ) )  +  \
+        list( range(nx_Child(first_3handpiece_State,3)+0, nx_Child(first_3handpiece_State,3)+ len_3handpiece_part-2 ) ) + \
+        list(range(nx_Child(first_3com_State ,3)+0, nx_Child(first_3com_State ,3)+ len_3com_part-2 )) + \
+        list(range(nx_Child(first_3work_State,3)+0, nx_Child(first_3work_State ,3)+ len_3work_part-2 )) + \
+        _4EngSymptomStateList :
+
             currentState = instance[userRequest['user_key']][StateString]
             if  userRequest['user_key'] in organization and  InputModeString in  organization[ userRequest['user_key'] ] and \
-            organization[ userRequest['user_key'] ][InputModeString] == 1 :
+            organization[ userRequest['user_key'] ][InputModeString] == 1 :  #direct insertion
                 if  userRequest['content']  == '0' :
                     return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)   
                 instance[userRequest['user_key']][SymptomString] = userRequest['content']            
@@ -1702,7 +1790,7 @@ def GetMessage():
                     _textMessage = SummaryText()._generate(LastYesNoString + u'\n' ,  organization , instance , userRequest['user_key'])                
                     return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  determineSubGraph(currentState ,5) , userRequest)             
             elif  userRequest['user_key'] in organization and  InputModeString in  organization[ userRequest['user_key'] ] and \
-            organization[ userRequest['user_key'] ][InputModeString] == 2 :
+            organization[ userRequest['user_key'] ][InputModeString] == 2 :  # mixed insertion
 
                 _textMultiChoice = u'' 
                 tokens = re.split(r'(\s*\,\s*|\s+)', userRequest['content'] )
@@ -1768,7 +1856,7 @@ def GetMessage():
                     #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i, True)
                     return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
 
-            else :
+            else :   # button insertion
                 if  userRequest['content'] in StateButtonList[ currentState ] :
                     lastKeyIndex = len(StateButtonList[ currentState ])-1
                     #direct describe case
@@ -1794,84 +1882,6 @@ def GetMessage():
                     ##instance.pop( userRequest['user_key'] ,  None)
                     return temp
      
-        elif    instance[userRequest['user_key']][StateString] in  \
-                list(range(nx_Child(first_3com_State ,3)+0, nx_Child(first_3com_State ,3)+ len_3com_part-2 )) + \
-                list(range(nx_Child(first_3work_State,3)+0, nx_Child(first_3work_State ,3)+ len_3work_part-2 )) + \
-                _4EngSymptomStateList :   
-            currentState = instance[userRequest['user_key']][StateString] 
-            _textMultiChoice = u'' 
-
-            #tokens = re.split(r'(\s|\,)', userRequest['content'] )
-            tokens = re.split(r'(\s*\,\s*|\s+)', userRequest['content'] )
-
-            ###_textMultiChoice = str(tokens)+u'\n'
-            if  len(tokens) == 1 and \
-                tokens[0].strip().isdigit() and \
-                int ( tokens[0].strip() ) == 0 :
-                    return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)              
-            for i  in  range( 1, len(tokens)-1 )  :
-#                    if bool (   re.match( r'\s|\,' , tokens[i] ) ) :
-                if bool (   re.match( r'\s*\,\s*|\s+' , tokens[i] ) ) :
-                    if tokens[i-1].strip().isdigit()  :
-#                            if  bool (   re.match( r'\s|\,' , tokens[i+1] ) ) :
-                        if  bool (   re.match( r'\s*\,\s*|\s+' , tokens[i+1] ) ) :
-                            continue 
-                        else :
-                            tokens[i] =  u','
-                    elif tokens[i+1].strip().isdigit() :
-#                            if  bool (   re.match( r'\s|\,' , tokens[i-1] ) ) :
-                        if  bool (   re.match( r'\s*\,\s*|\s+' , tokens[i-1] ) ) :
-                            continue 
-                        else :
-                            tokens[i] =  u','
-            ###_textMultiChoice  +=str(tokens)+u'\n'
-
-            lookup_table = []
-            for token in tokens :
-                if token.strip().isdigit() : 
-                    _intValue = int(token.strip()) 
-                    if _intValue in range( 1, 1+len( StateMultiChoiceList[currentState] ) ) :
-                        if  _intValue not in lookup_table :
-                            _textMultiChoice += StateMultiChoiceList[currentState][ _intValue-1 ]
-                            lookup_table.append( _intValue )
-                        else :
-                            continue                     
-                    else :
-                        _textMessage = token.strip()+SelectString+u'\n'+ InsertValidNumberString
-                        return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
-                else :
-                    _textMultiChoice += token
-
-            _MaxSymptomLen = 100 
-            TooLongString = u'너무 깁니다'
-            if len(_textMultiChoice) > _MaxSymptomLen :
-                _textMessage = _textMultiChoice+ fromStateMessageList[currentState] + TooLongString +u'(' + str(len(_textMultiChoice)) +u'>' +str(_MaxSymptomLen)+u')\n'+ReInsertString
-                return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
-            instance[userRequest['user_key']][SymptomString] = _textMultiChoice
-
-            _UserRequestKey = userRequest['user_key']
-            # ID info in temp_organization 
-            if userRequest['user_key'] not in organization:
-                _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])     
-                #if  _UserRequestKey in sum_instance :
-                #    _textMessage += u'\n\n'+u'다른 접수 내역(같은 자리만):' +u'\n'
-                #    for i in range( len(sum_instance[_UserRequestKey]) ) :
-                #        if   sum_instance[_UserRequestKey][i]['seat number'] == instance[_UserRequestKey]['seat number'] and \
-                #             sum_instance[_UserRequestKey][i]['location'] == instance[_UserRequestKey]['location'] :
-                #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , temp_organization, sum_instance, _UserRequestKey, i, True)
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
-            #already ID info  in organization  
-            else : 
-                _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
-                #if  _UserRequestKey in sum_instance :
-                #    _textMessage += u'\n\n'+u'다른 접수 내역(같은 자리만):' +u'\n'
-                #    for i in range( len(sum_instance[_UserRequestKey]) ) :
-                #        if   sum_instance[_UserRequestKey][i]['seat number'] == instance[_UserRequestKey]['seat number'] and \
-                #             sum_instance[_UserRequestKey][i]['location'] == instance[_UserRequestKey]['location'] :
-                #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i, True)
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
-
-
         elif   instance[userRequest['user_key']][StateString]  \
         in  [ nx_Child(first_4work_State,4) , nx_Child(first_3work_State,4) , nx_Child(first_3handpiece_State ,4) , nx_Child(first_3com_State ,4) ]  +  \
         list( range(   nx_Child(nx_Child(first_4eng_State,1),3), nx_Child( nx_Child_Sibling(first_4eng_State,1,12-1), 3)+1 ,  0x10) )   :
