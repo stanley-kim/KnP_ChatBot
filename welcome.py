@@ -33,7 +33,7 @@ import re
 
 app = Flask(__name__)
 
-VersionString = u'0.95'
+VersionString = u'0.96'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -532,7 +532,7 @@ StateMultiChoiceList = {
                 0x11111114: _HandpieceengineSymptomMultiChoiceList, 0x11111115: _AirinletSymptomMultiChoiceList,     0x11111116: _AiroutletSymptomMultiChoiceList ,  
                 0x11114111: _MonitorSymptomMultiChoiceList ,  0x11114112:_CombodySymptomMultiChoiceList ,  0x11114113:_ComnetworkSymptomMultiChoiceList,
                 0x111131111: _DollSymptomMultiChoiceList ,     0x111131112:_MonitorSymptomMultiChoiceList , 0x111131113:_LightSymptomMultiChoiceList ,  
-                0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomJoinString ,
+                0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomMultiChoiceList ,
                 0x111132111: _HighspeedHandpieceSymptomMultiChoiceList ,    0x111132112: _LowspeedHandpieceSymptomMultiChoiceList           
 }
 
@@ -548,6 +548,8 @@ StateButtonList = { 0x1: _State0KeyList,
 
                  0x11111111: _LightSymptomKeyList  ,         0x11111112: _MonitorSymptomKeyList ,     0x11111113 : _GastorchSymptomKeyList , 
                  0x11111114: _HandpieceengineSymptomKeyList ,0x11111115: _AirinletSymptomKeyList ,    0x11111116: _AiroutletSymptomKeyList ,
+                 0x111131111: _DollSymptomKeyList ,     0x111131112:_MonitorSymptomKeyList , 0x111131113:_LightSymptomKeyList ,  
+                 0x111131114:_3WaySymptomKeyList ,      0x111131115: _HighspeedConnectorSymptomKeyList   ,     0x111131116:_LowspeedConnectorSymptomKeyList ,
                  0x111132111: _HighspeedHandpieceSymptomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
 
                  0x1111111111: _YesorNoKeyListv2,    0x1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
@@ -639,21 +641,21 @@ toStateMessageList = {    0x1:u'',
                           0x11114111:AskSymptomString ,                  
                           0x11114112:AskSymptomString ,                                            
                           0x11114113:AskSymptomString ,
-                          0x111131111:AskMultiSymptomString+u'\n'+ _DollSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,       
-                          0x111131112:AskMultiSymptomString+u'\n'+ _MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,    
-                          0x111131113:AskMultiSymptomString+u'\n'+ _LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
-                          0x111131114:AskMultiSymptomString+u'\n'+ _3WaySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
-                          0x111131115:AskMultiSymptomString+u'\n'+ _HighspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString,
-                          0x111131116:AskMultiSymptomString+u'\n'+ _LowspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString ,        
-                          0x111132111:AskSymptomString,   
-                          0x111132112:AskSymptomString, 
                           0x11111111:AskSymptomString ,       
                           0x11111112:AskSymptomString ,                                                   
                           0x11111113:AskSymptomString ,
                           0x11111114:AskSymptomString ,
                           0x11111115:AskSymptomString ,
                           0x11111116:AskSymptomString ,
-                          0x111111111:DirectInsertSymptomString,  0x111141111:DirectInsertSymptomString,                0x1111311111:DirectInsertPartString,  0x1111321111:DirectInsertPartString,
+                          0x111131111:AskSymptomString,       
+                          0x111131112:AskSymptomString,    
+                          0x111131113:AskSymptomString,
+                          0x111131114:AskSymptomString,
+                          0x111131115:AskSymptomString,
+                          0x111131116:AskSymptomString ,        
+                          0x111132111:AskSymptomString,   
+                          0x111132112:AskSymptomString, 
+                          0x111111111:DirectInsertSymptomString,  0x111141111:DirectInsertSymptomString,                0x1111311111:DirectInsertSymptomString,  0x1111321111:DirectInsertSymptomString,
                           0x14:u'',
                           0x11:InsertIDString,                     0x141:InsertIDString,                  0x142:AskDeletionString,    
                           0x143: AskInputModeString,               0x145:AskPasswordString,
@@ -667,6 +669,12 @@ toSymptomStateMessageListsList = {
                 0x11111114: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HandpieceengineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] , 
                 0x11111115: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AirinletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,     
                 0x11111116: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AiroutletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
+                0x111131111:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DollSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],       
+                0x111131112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],    
+                0x111131113:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
+                0x111131114:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_3WaySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
+                0x111131115:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
+                0x111131116:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,       
                 0x111132111:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,    
                 0x111132112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString]    
 }
