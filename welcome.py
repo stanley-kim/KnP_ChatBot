@@ -33,7 +33,7 @@ import re
 
 app = Flask(__name__)
 
-VersionString = u'0.94'
+VersionString = u'0.95'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -154,7 +154,6 @@ _MonitorSymptomMultiChoiceList = [
       u'3:흑백으로 나옴' 
     ]   
 
-
 _MonitorSymptomJoinString = u'\n'.join(_MonitorSymptomMultiChoiceList)
 
 _110VoltSymptomKeyList = [
@@ -219,7 +218,7 @@ _AiroutletSymptomMultiChoiceList = [
 _AiroutletSymptomJoinString = u'\n'.join(_AiroutletSymptomMultiChoiceList)
 
 
-_DollSymtomKeyList = [
+_DollSymptomKeyList = [
       u'1:목 회전 안 됨' ,
       u'2:목 셕션 안 됨' , 
       u'3:상악 덴티폼 고정 나사 없음' , 
@@ -228,13 +227,13 @@ _DollSymtomKeyList = [
       u'이전 메뉴'        
 ]
 
-_DollSymtomMultiChoiceList = [
+_DollSymptomMultiChoiceList = [
       u'1:목 회전 안 됨' ,
       u'2:목 셕션 안 됨' ,
       u'3:상악 덴티폼 고정 나사 없음' , 
       u'4:하악 덴티폼 고정 나사 없음'        
 ]
-_DollSymptomJoinString = u'\n'.join(_DollSymtomMultiChoiceList)
+_DollSymptomJoinString = u'\n'.join(_DollSymptomMultiChoiceList)
 
 _3WaySymptomKeyList = [ 
       u'1:물 안 나옴' ,
@@ -273,18 +272,28 @@ _LowspeedConnectorSymptomMultiChoiceList = [
 ]
 _LowspeedConnectorSymptomJoinString = u'\n'.join(_LowspeedConnectorSymptomMultiChoiceList)
 
-_HighspeedHandpieceSymtomKeyList = [
+_HighspeedHandpieceSymptomKeyList = [
       u'1:회전 안 됨' , 
       u'2:물 안 나옴',             
       u'3:증상 직접 입력', 
       u'이전 메뉴'       
 ]
+_HighspeedHandpieceSymptomMultiChoiceList = [
+      u'1:회전 안 됨' , 
+      u'2:물 안 나옴'             
+]
+_HighspeedHandpieceSymptomJoinString = u'\n'.join(_HighspeedHandpieceSymptomMultiChoiceList)
 
 _LowspeedHandpieceSymptomList = [
       u'1:회전 안 됨' , 
       u'2:증상 직접 입력', 
       u'이전 메뉴'       
 ]
+_LowspeedHandpieceSymptomMultiChoiceList = [
+      u'1:회전 안 됨' 
+]
+_LowspeedHandpieceSymptomJoinString = u'\n'.join(_LowspeedHandpieceSymptomMultiChoiceList)
+
 
 _ComnetworkSymptomKeyList = [
       u'1:오프라인으로 나옴' ,
@@ -522,8 +531,9 @@ StateMultiChoiceList = {
                 0x11111111: _LightSymptomMultiChoiceList  ,         0x11111112: _MonitorSymptomMultiChoiceList ,     0x11111113 : _GastorchSymptomMultiChoiceList , 
                 0x11111114: _HandpieceengineSymptomMultiChoiceList, 0x11111115: _AirinletSymptomMultiChoiceList,     0x11111116: _AiroutletSymptomMultiChoiceList ,  
                 0x11114111: _MonitorSymptomMultiChoiceList ,  0x11114112:_CombodySymptomMultiChoiceList ,  0x11114113:_ComnetworkSymptomMultiChoiceList,
-                0x111131111: _DollSymtomMultiChoiceList ,     0x111131112:_MonitorSymptomMultiChoiceList , 0x111131113:_LightSymptomMultiChoiceList ,  
-                0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomJoinString 
+                0x111131111: _DollSymptomMultiChoiceList ,     0x111131112:_MonitorSymptomMultiChoiceList , 0x111131113:_LightSymptomMultiChoiceList ,  
+                0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomJoinString ,
+                0x111132111: _HighspeedHandpieceSymptomMultiChoiceList ,    0x111132112: _LowspeedHandpieceSymptomMultiChoiceList           
 }
 
 StateButtonList = { 0x1: _State0KeyList, 
@@ -534,12 +544,12 @@ StateButtonList = { 0x1: _State0KeyList,
                  0x111111: _State111KeyList,          0x111141: _State141KeyList,  
                  0x1111311: _State1311KeyList ,       0x1111321 : _State1321KeyList, 
                  0x14111: _YesorNoKeyList ,                 
+                 0x141111: _YesorNoKeyList  ,   
 
                  0x11111111: _LightSymptomKeyList  ,         0x11111112: _MonitorSymptomKeyList ,     0x11111113 : _GastorchSymptomKeyList , 
                  0x11111114: _HandpieceengineSymptomKeyList ,0x11111115: _AirinletSymptomKeyList ,    0x11111116: _AiroutletSymptomKeyList ,
+                 0x111132111: _HighspeedHandpieceSymptomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
 
-                 0x141111: _YesorNoKeyList  ,   
-                                                   0x111132111: _HighspeedHandpieceSymtomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
                  0x1111111111: _YesorNoKeyListv2,    0x1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
                  0x11113111111: _YesorNoKeyListv2,   0x11113211111: _YesorNoKeyListv2                      
 }
@@ -656,7 +666,9 @@ toSymptomStateMessageListsList = {
                 0x11111113: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_GastorchSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,      
                 0x11111114: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HandpieceengineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] , 
                 0x11111115: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AirinletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,     
-                0x11111116: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AiroutletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString]    
+                0x11111116: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AiroutletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
+                0x111132111:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,    
+                0x111132112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString]    
 }
 
 push_StateList = {
@@ -728,7 +740,7 @@ def generate4EngStatesInformation() :
         state[ nx_Child_in(_current_State,1) ] = nx_Child_in(_current_State,1)      # insert device directly
         _current_State = nx_Child_in(_current_State,1)
         for j in range(len(len_devices_per_table)) : 
-            state[ nx_Child_in(_current_State,1)+j ] = nx_Child_in(_current_State,1)+j      #which symtom?
+            state[ nx_Child_in(_current_State,1)+j ] = nx_Child_in(_current_State,1)+j      #which Symptom?
             _4EngSymptomStateList.append(nx_Child_in(_current_State,1)+j)
         _current_State = nx_Child_in(_current_State,1)
         state[ nx_Child_in(_current_State,1) ] = nx_Child_in(_current_State,1)              #insert symptom directly
@@ -954,7 +966,7 @@ StateString = 'state'
 LocationString = 'location'
 SeatNumberString = 'seat number'
 PartString = 'part'
-SymtomString = 'symptom'
+SymptomString = 'symptom'
 TimeString = 'time'
 
 sum_instance = { u'init' : [ ] } 
@@ -964,7 +976,7 @@ instance = { u'temp': {StateString:initial_State,
                       LocationString    : u'',
                       SeatNumberString  : u'' ,
                       PartString        : u'',
-                      SymtomString      : u'' 
+                      SymptomString      : u'' 
                      }
 }
 
@@ -1178,13 +1190,13 @@ class SummaryText :
             self.mText += u'location   :' + _instance[ _UserRequestKey ][LocationString]+u'\n'
             self.mText += u'seat number:' + _instance[ _UserRequestKey ][SeatNumberString]+u'\n'
             self.mText += u'part       :' + _instance[ _UserRequestKey ][PartString]+u'\n'
-            self.mText += u'symptom    :' + _instance[ _UserRequestKey ][SymtomString]
+            self.mText += u'symptom    :' + _instance[ _UserRequestKey ][SymptomString]
         else : 
             if _OnlyPart == False :
                 self.mText += u'location   :' + _instance[ _UserRequestKey ][_key1][LocationString]+u'\n'
                 self.mText += u'seat number:' + _instance[ _UserRequestKey ][_key1][SeatNumberString]+u'\n'
             self.mText += u'part       :' + _instance[ _UserRequestKey ][_key1][PartString]+u'\n'
-            self.mText += u'symptom    :' + _instance[ _UserRequestKey ][_key1][SymtomString]+u'\n'
+            self.mText += u'symptom    :' + _instance[ _UserRequestKey ][_key1][SymptomString]+u'\n'
         return self.mText
 
     def _genRegrouped2(self, _organization, _sum_instance) :
@@ -1203,14 +1215,14 @@ class SummaryText :
                 _element = { 'user_key':_userkey }
                 _element[IDString]     = _organization[_userkey][IDString]
                 _element[NameString]   = _organization[_userkey][NameString]
-                _element[SymtomString] = _ins[SymtomString]
+                _element[SymptomString] = _ins[SymptomString]
                 _element[PartString]   = _ins[PartString]
                 _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
         for _key0 in _sumins_org_regrouping :
 #            self.mText += u'[['+ _key0    +u']]\n'
             for _key1 in _sumins_org_regrouping[_key0] :
                 for _ins in _sumins_org_regrouping[_key0][_key1] :
-                    self.mTextGroup[_key0] += _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymtomString] +u'\n'
+                    self.mTextGroup[_key0] += _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n'
         return self.mTextGroup
 
     def showOrgFile(self)  :
@@ -1672,7 +1684,7 @@ def GetMessage():
             organization[ userRequest['user_key'] ][InputModeString] == 1 :
                 if  userRequest['content']  == '0' :
                     return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)   
-                instance[userRequest['user_key']][SymtomString] = userRequest['content']            
+                instance[userRequest['user_key']][SymptomString] = userRequest['content']            
                 # no ID info case
                 if userRequest['user_key'] not in organization:
                     _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])   
@@ -1724,7 +1736,7 @@ def GetMessage():
                 if len(_textMultiChoice) > _MaxSymptomLen :
                     _textMessage = _textMultiChoice+ fromStateMessageList[currentState] + TooLongString +u'(' + str(len(_textMultiChoice)) +u'>' +str(_MaxSymptomLen)+u')\n'+ReInsertString
                     return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
-                instance[userRequest['user_key']][SymtomString] = _textMultiChoice
+                instance[userRequest['user_key']][SymptomString] = _textMultiChoice
 
                 _UserRequestKey = userRequest['user_key']
                 # ID info in temp_organization 
@@ -1757,7 +1769,7 @@ def GetMessage():
                     elif  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex] :
                         return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)   
                     else:
-                        instance[userRequest['user_key']][SymtomString] = userRequest['content']            
+                        instance[userRequest['user_key']][SymptomString] = userRequest['content']            
                         # ID info in temp_organization 
                         if userRequest['user_key'] not in organization:
                             _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])                
@@ -1827,7 +1839,7 @@ def GetMessage():
             if len(_textMultiChoice) > _MaxSymptomLen :
                 _textMessage = _textMultiChoice+ fromStateMessageList[currentState] + TooLongString +u'(' + str(len(_textMultiChoice)) +u'>' +str(_MaxSymptomLen)+u')\n'+ReInsertString
                 return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState,   currentState , userRequest)                  
-            instance[userRequest['user_key']][SymtomString] = _textMultiChoice
+            instance[userRequest['user_key']][SymptomString] = _textMultiChoice
 
             _UserRequestKey = userRequest['user_key']
             # ID info in temp_organization 
@@ -1859,7 +1871,7 @@ def GetMessage():
 
             if  userRequest['content']  == '0' :
                 return Arrow().make_Message_Button_change_State(currentState, restore_prev_State( userRequest['user_key'] )  , userRequest, request.url_root)   
-            instance[userRequest['user_key']][SymtomString] = userRequest['content']            
+            instance[userRequest['user_key']][SymptomString] = userRequest['content']            
             # no ID info case
             if userRequest['user_key'] not in organization:
                 _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])   
@@ -1891,7 +1903,7 @@ def GetMessage():
                 _copy_instance[LocationString] = instance[ _UserRequestKey ][LocationString]
                 _copy_instance[SeatNumberString] = instance[ _UserRequestKey ][SeatNumberString]
                 _copy_instance[PartString]  = instance[ _UserRequestKey ][PartString]            
-                _copy_instance[SymtomString] = instance[ _UserRequestKey ][SymtomString]
+                _copy_instance[SymptomString] = instance[ _UserRequestKey ][SymptomString]
                 sum_instance[_UserRequestKey].append(_copy_instance)
 
                 if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
