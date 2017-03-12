@@ -33,7 +33,7 @@ import re
 
 app = Flask(__name__)
 
-VersionString = u'0.97'
+VersionString = u'0.98'
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -1269,9 +1269,11 @@ def isValidID( number ) :
     return False 
 
 class SummaryText :
-    def  __init__(self, mText = '' , mTextGroup = {} ) :
+    def  __init__(self, mText = '' , mTextGroup = {} , mInstanceCount = 0 ) :
         self.mText = u'' 
         self.mTextGroup = {} 
+        self.mInstanceCount = 0
+
 
     def  _generate(self, _TextMessage,_organization,_instance, _UserRequestKey, _key1=None, _OnlyPart=False) :
         self.mText += _TextMessage
@@ -1294,6 +1296,7 @@ class SummaryText :
 
     def _genRegrouped2(self, _organization, _sum_instance) :
 
+        self.mInstanceCount = 0
         _sumins_org_regrouping = {}
         for _userkey in _sum_instance.keys() :
             if _userkey not in _organization :
@@ -1316,7 +1319,39 @@ class SummaryText :
             for _key1 in _sumins_org_regrouping[_key0] :
                 for _ins in _sumins_org_regrouping[_key0][_key1] :
                     self.mTextGroup[_key0] += _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n'
+                    self.mInstanceCount += 1
         return self.mTextGroup
+
+    def _genRegrouped3(self, _organization, _sum_instance) :
+
+        self.mInstanceCount = 0
+        _sumins_org_regrouping = {}
+        for _userkey in _sum_instance.keys() :
+            if _userkey not in _organization :
+                continue
+            for  _ins in  _sum_instance[_userkey]  : 
+                if  _ins[LocationString]  not in  _sumins_org_regrouping :
+                    _sumins_org_regrouping[ _ins[LocationString] ] = {}
+                if  _ins[SeatNumberString] not in _sumins_org_regrouping[_ins[LocationString]] :
+                    _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]] = []
+                if  _ins[LocationString]  not in self.mTextGroup :
+                    self.mTextGroup[_ins[LocationString]] = []
+                _element = { 'user_key':_userkey }
+                _element[IDString]     = _organization[_userkey][IDString]
+                _element[NameString]   = _organization[_userkey][NameString]
+                _element[SymptomString] = _ins[SymptomString]
+                _element[PartString]   = _ins[PartString]
+                _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
+        for _key0 in _sumins_org_regrouping :
+#            self.mText += u'[['+ _key0    +u']]\n'
+            for _key1 in _sumins_org_regrouping[_key0] :
+                for _ins in _sumins_org_regrouping[_key0][_key1] :
+                    self.mTextGroup[_key0].append( _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n' )
+                    self.mInstanceCount += 1
+        returelf.mTextGroup
+
+    def getInstanceCount(self) :
+        return self.mInstanceCount
 
     def showOrgFile(self)  :
         if os.path.exists(org_rwfile_path) :
@@ -1326,7 +1361,6 @@ class SummaryText :
                 self.mText += line.decode('utf-8')    
             f.close()      
         return self.mText
-
 
 original_request_xlsx_file = u'static/original_request_office.xlsx'
 target_request_xlsx_file          = u'static/target.xlsx'
@@ -1390,14 +1424,18 @@ def _calcTimer() :
 requester_name = u'강신청'
 requester_phone = u'010-0001-0005'
 class MailBodyandAttachment :
-    def  __init__(self, mBody = u'' , mAttachmentList = [] ) :
+    def  __init__(self, mBody = u'' , mAttachmentList = [] , mInstanceCount = 0) :
         self.mBody = u'' 
         self.mAttachmentList = []  
+        self.mInstanceCount = 0
     def prepare(self) :
 
-        _TextGroup = SummaryText()._genRegrouped2( organization, sum_instance )
+        s = SummaryText()
+        _TextGroup = s._genRegrouped2( organization, sum_instance )
         if  len(_TextGroup.keys()) == 0 :
             return False
+        self.mInstanceCount = s.getInstanceCount()
+
         shutil.copy( original_request_xlsx_file,target_request_xlsx_file)
         excel_document = load_workbook(filename = target_request_xlsx_file)
         source = excel_document.get_sheet_by_name('Sheet1')
@@ -1429,7 +1467,8 @@ class MailBodyandAttachment :
         return self.mBody
     def getAttachmentList(self) :
         return self.mAttachmentList
-
+    def getInstanceCount(self) :
+        return self.mInstanceCount  
 
 def Org2File( _organization, _file) :
     f = open( _file , 'w')
@@ -1451,7 +1490,8 @@ def periodic_mail_forwarding()  :
     try :
         #this is yesterday's summary
         #subject = u'실습실 수리 신청입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
-        subject = u'실습실 수리 신청입니다('+unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
+        subject = u'실습실 수리 신청입니다(총 '+str(m.getInstanceCount())+u'건)('
+        subject += unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
         #mail(to, subject , body.encode('utf-8') )        
         mail( emailToOfficeList, subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
     except :
@@ -1838,22 +1878,10 @@ def GetMessage():
                 # ID info in temp_organization 
                 if userRequest['user_key'] not in organization:
                     _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])     
-                    #if  _UserRequestKey in sum_instance :
-                    #    _textMessage += u'\n\n'+u'다른 접수 내역(같은 자리만):' +u'\n'
-                    #    for i in range( len(sum_instance[_UserRequestKey]) ) :
-                    #        if   sum_instance[_UserRequestKey][i]['seat number'] == instance[_UserRequestKey]['seat number'] and \
-                    #             sum_instance[_UserRequestKey][i]['location'] == instance[_UserRequestKey]['location'] :
-                    #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , temp_organization, sum_instance, _UserRequestKey, i, True)
                     return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
                 #already ID info  in organization  
                 else : 
                     _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
-                    #if  _UserRequestKey in sum_instance :
-                    #    _textMessage += u'\n\n'+u'다른 접수 내역(같은 자리만):' +u'\n'
-                    #    for i in range( len(sum_instance[_UserRequestKey]) ) :
-                    #        if   sum_instance[_UserRequestKey][i]['seat number'] == instance[_UserRequestKey]['seat number'] and \
-                    #             sum_instance[_UserRequestKey][i]['location'] == instance[_UserRequestKey]['location'] :
-                    #            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i, True)
                     return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   determineSubGraph(currentState ,5) , userRequest)             
 
             else :   # button insertion
@@ -1995,13 +2023,10 @@ def GetMessage():
                 if  userRequest['content'] == p  :
                     _textMessage = userRequest['content']+ fromStateMessageList[currentState]+u'\n'+ toStateMessageList[nx_Child(currentState,1)]+u'\n\n'                
                     _textMessage += u'---from memory-----------\n'
-                    f = open( org_rwfile_path , 'w')
                     for key in organization.keys() :
                         _line = key  + u'  '+ str(organization[key][IDString]) + u'  '+ organization[key][NameString] + u'  '+ str(organization[key][InputModeString])+u'\n'
                         _textMessage += _line
-                        if  isinstance(_line, unicode) :
-                            f.write(_line.encode('utf-8')) 
-                    f.close()
+                    Org2File(organization, org_rwfile_path)  # organization to organization file
                     _textMessage += u'---to storage-----------\n'
                     _textMessage += SummaryText().showOrgFile()
 
@@ -2011,7 +2036,8 @@ def GetMessage():
                     _textMessage += m.getBody()
 
                     to = emailAdminList 
-                    subject = u'전체고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
+                    subject = u'전체고장 확인(총 '+str(m.getInstanceCount())+u'건)('    
+                    subject += unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
                     #body = 'this is all for you\n'
                     body = _textMessage.encode('utf-8')
 
