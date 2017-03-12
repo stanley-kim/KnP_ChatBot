@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'0.99'
+VersionString = u'1.00'
 
 
 _State0KeyList = [ 
@@ -1067,11 +1067,8 @@ PartString = 'part'
 SymptomString = 'symptom'
 TimeString = 'time'
 
-
 practice_sum_instance = { u'init' : [ ] }
-
 sum_instance = { u'init' : [ ] } 
-
 
 instance = { u'temp': {StateString:initial_State, 
                       LocationString    : u'',
@@ -1529,7 +1526,6 @@ def hello_world() :
     except :
         mail( emailAdminList, u'hello_world_case0', u'check'.encode('utf-8'))
 
-
 generate4EngStatesInformation()
 generateOrganization(organization)
 generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
@@ -1591,20 +1587,19 @@ def GetMessage():
 
                     for i in range( len(sum_instance[_UserRequestKey]) ):
                         _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
-
-                    #to = emailToList
-                    to = emailForwardingList 
-                    #subject = u'개인별 고장'.encode('utf-8')
-                    subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
-                    #body = 'this is all for you\n'
-                    body = _textMessage.encode('utf-8')
-                    mail(to, subject , body)
+                    #subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
+                    #mail(emailAdminList , subject , _textMessage.encode('utf-8'))
 
                 _textMessage += u'\n'
                 _textMessage += u'(연습용)최종 접수 예정:' +u'\n'
                 if _UserRequestKey in practice_sum_instance and _UserRequestKey in organization  :
                     for i in range( len(practice_sum_instance[_UserRequestKey]) ):
                         _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, practice_sum_instance, _UserRequestKey, i)
+
+                # to check one users sum_instance and practice_sum_instance 
+                #if  _UserRequestKey in organization and ( _UserRequestKey in practice_sum_instance or  _UserRequestKey in sum_instance ) :
+                #    subject = u'개인별고장 확인'+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
+                #    mail(emailAdminList , subject , _textMessage.encode('utf-8'))
 
                 #_textMessage += u'최종 접수 완료:' +u'\n'
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
@@ -2075,8 +2070,7 @@ def GetMessage():
                     _textMessage += u'[[practice_sum_instance]]' + u'\n'
                     for key0 in practice_sum_instance :
                         for i in range( len(practice_sum_instance[key0]) ):
-                            _textMessage += SummaryText()._generate(u'' , organization, practice_sum_instance , key0 , i)
-
+                            _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, practice_sum_instance , key0 , i)
 
                     subject = u'전체고장 확인(총 '+str(m.getInstanceCount())+u'건)('    
                     subject += unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
@@ -2094,7 +2088,6 @@ def GetMessage():
                 return Arrow().make_Message_Button_change_State( currentState, initial_State, userRequest  )
             else :
                 return Arrow().make_Message_Button_change_State( currentState, initial_State, userRequest )
-
 
         #else:     
         _text = '(state:'+ format(instance[userRequest['user_key']][StateString] , '#04x' ) + ')(content:' + userRequest['content'] + ')'
