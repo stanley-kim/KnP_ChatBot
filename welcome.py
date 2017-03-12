@@ -31,9 +31,12 @@ from openpyxl.drawing.image import Image
 
 import re
 
+import traceback
+
 app = Flask(__name__)
 
-VersionString = u'0.98'
+VersionString = u'0.99'
+
 
 _State0KeyList = [ 
     u'1.고장 접수',
@@ -69,7 +72,9 @@ _InputModeList = [
 
 _YesorNoKeyList = [  u'1.Yes', u'2.No' , u'이전 메뉴'  ]
 
-_YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴'  ]
+#_YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴'  ]
+_YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴' , u'4.Yes(연습용)', u'5.Yes(+파트 추가 입력)(연습용)', u'6.No(연습용)' ]
+
 
 _State13KeyList = [
       u'5.지하 3층 실습실 자리',
@@ -1062,6 +1067,9 @@ PartString = 'part'
 SymptomString = 'symptom'
 TimeString = 'time'
 
+
+practice_sum_instance = { u'init' : [ ] }
+
 sum_instance = { u'init' : [ ] } 
 
 
@@ -1499,7 +1507,10 @@ def periodic_mail_forwarding()  :
     try :
         sum_instance.clear()  #clear sum_instance 
         Org2File(organization, org_rwfile_path)  # organization to organization file
-        _textMessage = str(sum_instance) + u'\n'
+        practice_sum_instance.clear()
+
+        _textMessage = u'sum of instances'+ u'\n'
+        _textMessage += str(sum_instance) + u'\n'
         _textMessage += SummaryText().showOrgFile()
         mail(emailAdminList, u'after periodic mail', _textMessage.encode('utf-8') )  #check sum_instance and organization file
     except :
@@ -1576,8 +1587,7 @@ def GetMessage():
                 _textMessage += u'최종 접수 예정:' +u'\n'
 
                 _UserRequestKey = userRequest['user_key'] 
-                if _UserRequestKey in sum_instance and \
-                   _UserRequestKey in organization  :
+                if _UserRequestKey in sum_instance and  _UserRequestKey in organization  :
 
                     for i in range( len(sum_instance[_UserRequestKey]) ):
                         _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
@@ -1588,15 +1598,13 @@ def GetMessage():
                     subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
                     #body = 'this is all for you\n'
                     body = _textMessage.encode('utf-8')
-                    try:
-                        mail(to, subject , body)
+                    mail(to, subject , body)
 
-                    except smtplib.SMTPAuthenticationError : 
-                        _textMessage += u'situation01' 
-                    except smtplib.SMTPException :  
-                        _textMessage += u'situation02' 
-                    except :
-                        _textMessage += u'situation00' 
+                _textMessage += u'\n'
+                _textMessage += u'(연습용)최종 접수 예정:' +u'\n'
+                if _UserRequestKey in practice_sum_instance and _UserRequestKey in organization  :
+                    for i in range( len(practice_sum_instance[_UserRequestKey]) ):
+                        _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, practice_sum_instance, _UserRequestKey, i)
 
                 #_textMessage += u'최종 접수 완료:' +u'\n'
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
@@ -1927,6 +1935,7 @@ def GetMessage():
                 _textMessage = SummaryText()._generate(LastYesNoString + u'\n' ,  organization , instance , userRequest['user_key'])                
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  determineSubGraph(currentState ,5) , userRequest)             
 
+        # Submit Instance Yes/Yes+/No/Prev
         elif   instance[userRequest['user_key']][StateString]  \
         in [ nx_Child(first_4work_State,5)   ,nx_Child(first_3work_State ,5) , nx_Child(first_3handpiece_State ,5), nx_Child( first_3com_State,5) ] +\
             list( range(   nx_Child(nx_Child(first_4eng_State,1),4), nx_Child( nx_Child_Sibling(first_4eng_State,1,12-1), 4)+1 ,  0x10) ):
@@ -1969,7 +1978,36 @@ def GetMessage():
     #        elif userRequest['content']  ==  StateButtonList[ currentState ][3] :
     #            return Arrow().make_Message_Button_change_State(currentState, nx_Child( determineSubGraph(currentState, True),1)  , userRequest, request.url_root)
 
-            else :   # No case
+
+            elif  userRequest['content']  in [ StateButtonList[ currentState ][4] , StateButtonList[ currentState ][5] ] :
+
+
+                if  userRequest['user_key'] in temp_organization and \
+                    userRequest['user_key'] not in  organization :
+                    organization[userRequest['user_key']] = { IDString :  temp_organization[userRequest['user_key']][IDString]    }
+                    organization[userRequest['user_key']][NameString] = temp_organization[userRequest['user_key']][NameString]   
+                    temp_organization.pop( userRequest['user_key'] ,  None)
+
+                _UserRequestKey = userRequest['user_key']
+                _Time =  unicode( (datetime.now() + timedelta(hours=time_difference) ).strftime("%Y-%m-%d %H:%M:%S") )
+                if _UserRequestKey not in practice_sum_instance    :
+                    practice_sum_instance[_UserRequestKey] = []
+
+                _copy_instance = { TimeString:_Time }
+                _copy_instance[LocationString] = instance[ _UserRequestKey ][LocationString]
+                _copy_instance[SeatNumberString] = instance[ _UserRequestKey ][SeatNumberString]
+                _copy_instance[PartString]  = instance[ _UserRequestKey ][PartString]            
+                _copy_instance[SymptomString] = instance[ _UserRequestKey ][SymptomString]
+                practice_sum_instance[_UserRequestKey].append(_copy_instance)
+                
+                if  userRequest['content']  ==  StateButtonList[ currentState ][4] :
+                    instance[userRequest['user_key']] = { StateString : state[initial_State] }            
+                    return  Arrow().make_Message_Button_change_State(currentState, initial_State, userRequest)
+                else  :
+                    return Arrow().make_Message_Button_change_State(currentState,  determineSubGraph(currentState,1)  , userRequest, request.url_root)
+
+
+            else :   # No case   
                 _textMessage = userRequest['content']+ u'\n'+ CancelString 
                 instance[userRequest['user_key']] = { StateString : state[initial_State] }            
                 return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,initial_State, userRequest)
@@ -2033,23 +2071,17 @@ def GetMessage():
                     m = MailBodyandAttachment()
                     m.prepare()
 
-                    _textMessage += m.getBody()
+                    _textMessage += m.getBody() + u'\n'
+                    _textMessage += u'[[practice_sum_instance]]' + u'\n'
+                    for key0 in practice_sum_instance :
+                        for i in range( len(practice_sum_instance[key0]) ):
+                            _textMessage += SummaryText()._generate(u'' , organization, practice_sum_instance , key0 , i)
 
-                    to = emailAdminList 
+
                     subject = u'전체고장 확인(총 '+str(m.getInstanceCount())+u'건)('    
                     subject += unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
-                    #body = 'this is all for you\n'
-                    body = _textMessage.encode('utf-8')
 
-                    try:
-                        mail(to, subject , body,  m.getAttachmentList() )
-
-                    except smtplib.SMTPAuthenticationError : 
-                        _textMessage += u'something went wrong1' 
-                    except smtplib.SMTPException : 
-                        _textMessage += u'something went wrong2' 
-                    except :
-                        _textMessage += u'something went wrong0'
+                    mail(emailAdminList, subject , _textMessage.encode('utf-8') ,  m.getAttachmentList() )
 
                     return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
                 else :
@@ -2078,7 +2110,8 @@ def GetMessage():
         textMessage = {"message":textContent}
         return jsonify(textMessage)
     except Exception as ex :
-                return  Arrow()._make_Message_Button_change_State(True,  str(ex) , True,  currentState,initial_State, userRequest)
+                return  Arrow()._make_Message_Button_change_State(True,  traceback.format_exc()  , True,  currentState,initial_State, userRequest)
+#                return  Arrow()._make_Message_Button_change_State(True,  str(ex) , True,  currentState,initial_State, userRequest)
 
 
 @app.errorhandler(404)
