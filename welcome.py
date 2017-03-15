@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.03'
+VersionString = u'1.04'
 
 
 _State0KeyList = [ 
@@ -62,6 +62,17 @@ _State4KeyList = [
       u'5.시스템 관리자 메뉴' ,
       u'이전 메뉴'     
     ] 
+
+
+_GradeKeyList = [
+      u'1.본과 4학년',
+      u'2.본과 3학년',
+      u'3.본과 2학년',
+      u'4.본과 1학년',
+      u'5.예과 2학년',
+      u'6.예과 1학년',
+      u'이전 메뉴'                
+]
 
 _InputModeList = [
       u'1.버튼 방식',
@@ -572,9 +583,9 @@ StateMultiChoiceList = {
 StateButtonList = { initial_State: _State0KeyList, 
                   nx_Child_Sibling_in(initial_State,1,3): _State4KeyList ,
                   0x142 : _YesorNoKeyList ,   0x143 : _InputModeList, 
-                 nx_Child_in(first_Independent_IDInsert_State,2): _YesorNoKeyList ,                 
+                 nx_Child_in(first_Independent_IDInsert_State,2): _GradeKeyList ,                 
                  nx_Child_in(first_Independent_IDInsert_State,3): _YesorNoKeyList  ,   
-                 ##nx_Child_in(initial_State,3): _State1KeyList ,             
+                 nx_Child_in(initial_State,3): _GradeKeyList ,  
                  ##nx_Child_Sibling_in(initial_State,4,2):  _State13KeyList,            
                  nx_Child_in(initial_State,4): _State1KeyList ,             
                  nx_Child_Sibling_in(initial_State,5,2):  _State13KeyList,            
@@ -627,6 +638,7 @@ AskSymptomString = u'어떤 증상인가요?'
 AskMultiSymptomString = u'어떤 증상인가요?\n\n0:이전 메뉴로 돌아가기'
 InsertIDString = u'학번(혹은 사번)을 입력해주세요 ex)2011740011\n0:이전 메뉴'
 InsertNameString = u'이름(혹은 별명)을 입력해주세요 ex)오승환, 강정호a, HyunsooKim\n0:이전 메뉴'
+InsertGradeString = u'학년을 입력해 주세요'
 ReInsertString = u'다시 입력해 주세요'
 InsertYesNoString = u'입력하시겠습니까?'
 LastYesNoString = u'최종 접수하시겠습니까'
@@ -653,9 +665,10 @@ fromStateMessageList = {  initial_State:SelectString+u'\n' ,
                           0x1451:SelectString+u'\n' ,         
                           nx_Child_in(initial_State,2):SelectString+u'\n' ,          
                           nx_Child_in(first_Independent_IDInsert_State,1):SelectString+ u'\n' ,                                           
-                          ##nx_Child_in(initial_State,3):SelectString+u'\n' ,
+                          nx_Child_in(initial_State,3):SelectString+u'\n' ,
                           nx_Child_in(initial_State,4):SelectString+u'\n' ,
                           nx_Child_in(first_Independent_IDInsert_State,2):SelectString+ u'\n',
+                          nx_Child_in(first_Independent_IDInsert_State,3):SelectString+ u'\n',
                           ##nx_Child_Sibling_in(initial_State,4,2):SelectString+u'\n' ,
                           nx_Child_Sibling_in(initial_State,5,2):SelectString+u'\n' ,
                           first_4work_State:InsertedString+u'\n' ,    first_3com_State:SelectString+u'\n' ,          
@@ -688,7 +701,8 @@ toStateMessageList = {    initial_State:u'',
                           0x142:AskDeletionString,                                 0x143: AskInputModeString,               
                           0x145:AskPasswordString,
                           0x1451:AskMovementString,
-                          #nx_Child_in(initial_State,3):AskLocationString,
+                          nx_Child_in(initial_State,3):InsertGradeString ,
+                          nx_Child_in(first_Independent_IDInsert_State,2):InsertGradeString,
                           #nx_Child_Sibling_in(initial_State,4,2):AskSeatHandpieceString,                                                    
                           nx_Child_in(initial_State,4):AskLocationString,
                           nx_Child_Sibling_in(initial_State,5,2):AskSeatHandpieceString,                                                    
@@ -783,9 +797,9 @@ state = { initial_State:0x1 ,
           first_Independent_IDInsert_State:0x141,                   0x142:0x142,              0x143:0x143,                       0x145:0x145,     
           nx_Child_in(first_Independent_IDInsert_State,1):0x1411,
           nx_Child_in(first_Independent_IDInsert_State,2):0x14111 ,   
-          #nx_Child_in(first_Independent_IDInsert_State,3):0x141111 ,
+          nx_Child_in(first_Independent_IDInsert_State,3):0x141111 ,
           0x1451:0x1451,
-          ##nx_Child_in(initial_State,3):0x1111,                                
+          nx_Child_in(initial_State,3):0x1111,                                
           ##nx_Child_Sibling_in(initial_State,4,2):0x11113, 
           nx_Child_in(initial_State,4):0x11111,                                
           nx_Child_Sibling_in(initial_State,5,2):0x111113, 
@@ -1150,15 +1164,21 @@ instance = { u'temp': {StateString:initial_State,
 
 IDString = 'ID'
 NameString = 'Name'
+GradeString = 'Grade'
+RecordedYearString = 'RecordedYear'
 InputModeString = 'InputMode'
 
 organization = { u'init' :  { IDString : 0 ,
                               NameString : u'init' ,
+                              GradeString :  1,
+                              RecordedYearString : 2017,
                               InputModeString : 0 
                             }
 }
 temp_organization = { u'temp' :  { IDString : 0 ,
                                    NameString : u'temp' , 
+                                   GradeString :  1,
+                                   RecordedYearString : 2017,
                                    InputModeString : 0    
                                 }
 } 
@@ -1171,17 +1191,30 @@ def generateOrganization( _org)  :
         for line in lines :
             tokens = line.decode('utf-8').split()
             if tokens[0] not in _org and \
-                len(tokens) == 3 and \
-                tokens[1].isdigit() :   # user_key  ID Name 
+                len(tokens) == 6 and \
+                tokens[1].isdigit() and  tokens[3].isdigit() and  \
+                tokens[4].isdigit() and  tokens[5].isdigit() :    # user_key  ID  Name   Grade    RecordedYear   InputMode
                 _org[tokens[0]] = { IDString : int(tokens[1]) }
                 _org[tokens[0]][NameString ] = tokens[2]
-                _org[tokens[0]][InputModeString ] = 0 
+                _org[tokens[0]][GradeString ] = int(tokens[3])
+                _org[tokens[0]][RecordedYearString ] = int(tokens[4])
+                _org[tokens[0]][InputModeString ] = int(tokens[5])             
             elif tokens[0] not in _org and \
                 len(tokens) == 4 and \
                 tokens[1].isdigit() :    # user_key  ID  Name  InputMode
                 _org[tokens[0]] = { IDString : int(tokens[1]) }
                 _org[tokens[0]][NameString ] = tokens[2]
+                _org[tokens[0]][GradeString ] = 5
+                _org[tokens[0]][RecordedYearString ] = 2017
                 _org[tokens[0]][InputModeString ] = int(tokens[3])             
+            elif tokens[0] not in _org and \
+                len(tokens) == 3 and \
+                tokens[1].isdigit() :   # user_key  ID Name 
+                _org[tokens[0]] = { IDString : int(tokens[1]) }
+                _org[tokens[0]][NameString ] = tokens[2]
+                _org[tokens[0]][GradeString ] = 1
+                _org[tokens[0]][RecordedYearString ] = 2017
+                _org[tokens[0]][InputModeString ] = 0 
         f.close()   
 
 emailToOfficeList = []
@@ -1549,6 +1582,10 @@ def Org2File( _organization, _file) :
     f = open( _file , 'w')
     for key in _organization.keys() :
         _line = key  + u'  '+ str(_organization[key][IDString]) + u'  '+ _organization[key][NameString] 
+        if GradeString in _organization[key].keys() : 
+            _line += u'  '+ str(_organization[key][GradeString]) 
+        if RecordedYearString in _organization[key].keys() : 
+            _line += u'  '+ str(_organization[key][RecordedYearString]) 
         if InputModeString in _organization[key].keys() : 
             _line += u'  '+ str(_organization[key][InputModeString]) 
         _line += u'\n'
@@ -1715,12 +1752,46 @@ def GetMessage():
                     _textMessage = userRequest['content']+SelectString+u'\n'+  LastYesNoString +u'\n'
                     _textMessage += u'ID   :'+ str(temp_organization[userRequest['user_key']][IDString])+u'\n'
                     _textMessage += u'Name :'+ temp_organization[userRequest['user_key']][NameString]
-                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,2) , userRequest)             
+                    ##return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
                 else :
                     return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2) , userRequest ) 
                     ##return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
 
-        elif   instance[userRequest['user_key']][StateString]  == nx_Child( first_Independent_IDInsert_State, 2 ) : #14111
+        elif   instance[userRequest['user_key']][StateString]  \
+            in [  nx_Child(initial_State,3),   nx_Child(first_Independent_IDInsert_State,2) ]  :               #111 , 1411
+            currentState = instance[userRequest['user_key']][StateString] 
+            if     userRequest['content']  == StateButtonList[ currentState ][6] :
+                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest, request.url_root)               
+            elif   userRequest['content']  == StateButtonList[ currentState ][5]  :
+                temp_organization[userRequest['user_key']][GradeString ] = 1
+            elif   userRequest['content']  == StateButtonList[ currentState ][4]  :
+                temp_organization[userRequest['user_key']][GradeString ] = 2
+            elif   userRequest['content']  == StateButtonList[ currentState ][3]  :
+                temp_organization[userRequest['user_key']][GradeString ] = 3
+            elif   userRequest['content']  == StateButtonList[ currentState ][2]  :
+                temp_organization[userRequest['user_key']][GradeString ] = 4
+            elif   userRequest['content']  == StateButtonList[ currentState ][1]  :
+                temp_organization[userRequest['user_key']][GradeString ] = 5
+            elif   userRequest['content']  == StateButtonList[ currentState ][0]  :
+                temp_organization[userRequest['user_key']][GradeString ] = 6
+            else :
+                temp_organization[userRequest['user_key']][GradeString ] = 1
+            temp_organization[userRequest['user_key']][RecordedYearString ] = datetime.now().year
+
+            if currentState == nx_Child(first_Independent_IDInsert_State,2) :
+                _textMessage = userRequest['content']+SelectString+u'\n'+  LastYesNoString +u'\n'
+                _textMessage += u'ID   :'+ str(temp_organization[userRequest['user_key']][IDString])+u'\n'
+                _textMessage += u'Name :'+ temp_organization[userRequest['user_key']][NameString]+u'\n'
+                _textMessage += u'Grade :'+ str(temp_organization[userRequest['user_key']][GradeString ] )
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
+                ##return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
+            else :
+                return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
+                ##return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
+
+#        elif   instance[userRequest['user_key']][StateString]  == nx_Child( first_Independent_IDInsert_State, 2 ) : #14111
+        elif   instance[userRequest['user_key']][StateString]  == nx_Child( first_Independent_IDInsert_State,3) : #14111
             currentState = instance[userRequest['user_key']][StateString]   
             if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
                 if  userRequest['user_key'] in temp_organization :
@@ -1736,7 +1807,8 @@ def GetMessage():
                 instance[userRequest['user_key']] = { StateString : initial_State }            
                 return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, initial_State, userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][2] :
-                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)
+                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest)
+                ##return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)
             else : 
                 _textMessage = userRequest['content']+ u'\n'+ CancelString 
                 instance[userRequest['user_key']] = { StateString : initial_State }            
@@ -2136,7 +2208,14 @@ def GetMessage():
                     _textMessage = userRequest['content']+ fromStateMessageList[currentState]+u'\n'+ toStateMessageList[nx_Child(currentState,1)]+u'\n\n'                
                     _textMessage += u'---from memory-----------\n'
                     for key in organization.keys() :
-                        _line = key  + u'  '+ str(organization[key][IDString]) + u'  '+ organization[key][NameString] + u'  '+ str(organization[key][InputModeString])+u'\n'
+                        _line = key  + u'  '+ str(organization[key][IDString]) + u'  '+ organization[key][NameString]  
+                        if GradeString in organization[key].keys() :
+                            _line += u'  '+ str(organization[key][GradeString ]) 
+                        if RecordedYearString in organization[key].keys() :
+                            _line += u'  '+ str(organization[key][RecordedYearString ]) 
+                        if InputModeString in organization[key].keys() :
+                            _line += u'  '+ str(organization[key][InputModeString ])
+                        _line += u'\n'
                         _textMessage += _line
                     Org2File(organization, org_rwfile_path)  # organization to organization file
                     _textMessage += u'---to storage-----------\n'
