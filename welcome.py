@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.01'
+VersionString = u'1.02'
 
 
 _State0KeyList = [ 
@@ -537,44 +537,69 @@ _PollcleanerSymptomMultiChoiceList = [
 _PollcleanerSymptomJoinString = u'\n'.join(_PollcleanerSymptomMultiChoiceList)
 
 
+def  _nx_Child_in(stage_num , score) :
+    if score == 0 :
+        return stage_num
+    else :
+        return _nx_Child_in(stage_num * 0x10 +1 , score-1)
+def  nx_Child_in( stage_num , score ) :
+    num = _nx_Child_in(stage_num, score)
+    return num
+def nx_Child_Sibling_in(stage_num , child_score, sibling_score) :
+    num = nx_Child_in(stage_num, child_score) + sibling_score
+    return num
+
+initial_State          = 0x1
+first_4work_State      = 0x11111
+first_3com_State       = 0x11114
+first_3work_State      = 0x111131
+first_3handpiece_State = 0x111132
+first_4eng_State       = 0x11112
+first_Independent_IDInsert_State = 0x141
+
 StateMultiChoiceList = {
-                0x11111111: _LightSymptomMultiChoiceList  ,         0x11111112: _MonitorSymptomMultiChoiceList ,     0x11111113 : _GastorchSymptomMultiChoiceList , 
-                0x11111114: _HandpieceengineSymptomMultiChoiceList, 0x11111115: _AirinletSymptomMultiChoiceList,     0x11111116: _AiroutletSymptomMultiChoiceList ,  
-                0x111131111: _DollSymptomMultiChoiceList ,     0x111131112:_MonitorSymptomMultiChoiceList , 0x111131113:_LightSymptomMultiChoiceList ,  
-                0x111131114:_3WaySymptomMultiChoiceList,      0x111131115: _HighspeedConnectorSymptomMultiChoiceList   ,     0x111131116:_LowspeedConnectorSymptomMultiChoiceList ,
-                0x111132111: _HighspeedHandpieceSymptomMultiChoiceList ,    0x111132112: _LowspeedHandpieceSymptomMultiChoiceList   ,        
-                0x11114111: _MonitorSymptomMultiChoiceList ,  0x11114112:_CombodySymptomMultiChoiceList ,  0x11114113:_ComnetworkSymptomMultiChoiceList
+                nx_Child_in(first_4work_State,3): _LightSymptomMultiChoiceList  ,            nx_Child_Sibling_in(first_4work_State,3,1): _MonitorSymptomMultiChoiceList ,     
+                nx_Child_Sibling_in(first_4work_State,3,2):_GastorchSymptomMultiChoiceList , nx_Child_Sibling_in(first_4work_State,3,3): _HandpieceengineSymptomMultiChoiceList, 
+                nx_Child_Sibling_in(first_4work_State,3,4):_AirinletSymptomMultiChoiceList,  nx_Child_Sibling_in(first_4work_State,3,5): _AiroutletSymptomMultiChoiceList ,  
+                nx_Child_in(first_3work_State,3): _DollSymptomMultiChoiceList ,              nx_Child_Sibling_in(first_3work_State,3,1):_MonitorSymptomMultiChoiceList , 
+                nx_Child_Sibling_in(first_3work_State,3,2):_LightSymptomMultiChoiceList ,    nx_Child_Sibling_in(first_3work_State,3,3):_3WaySymptomMultiChoiceList,      
+                nx_Child_Sibling_in(first_3work_State,3,4):_HighspeedConnectorSymptomMultiChoiceList, nx_Child_Sibling_in(first_3work_State,3,5):_LowspeedConnectorSymptomMultiChoiceList ,
+                nx_Child_in(first_3handpiece_State,3): _HighspeedHandpieceSymptomMultiChoiceList ,    nx_Child_Sibling_in(first_3handpiece_State,3,1): _LowspeedHandpieceSymptomMultiChoiceList   ,        
+                nx_Child_in(first_3com_State,3): _MonitorSymptomMultiChoiceList ,  nx_Child_Sibling_in(first_3com_State,3,1):_CombodySymptomMultiChoiceList ,  
+                nx_Child_Sibling_in(first_3com_State,3,2):_ComnetworkSymptomMultiChoiceList
 }
 
-StateButtonList = { 0x1: _State0KeyList, 
-                  0x14: _State4KeyList ,
+StateButtonList = { initial_State: _State0KeyList, 
+                  nx_Child_Sibling_in(initial_State,1,3): _State4KeyList ,
                   0x142 : _YesorNoKeyList ,   0x143 : _InputModeList, 
-                 0x1111: _State1KeyList ,             
-                 0x11113:  _State13KeyList,            
-                 0x111111: _State111KeyList,          0x111141: _State141KeyList,  
-                 0x1111311: _State1311KeyList ,       0x1111321 : _State1321KeyList, 
-                 0x14111: _YesorNoKeyList ,                 
-                 0x141111: _YesorNoKeyList  ,   
-
-                 0x11111111: _LightSymptomKeyList  ,         0x11111112: _MonitorSymptomKeyList ,     0x11111113 : _GastorchSymptomKeyList , 
-                 0x11111114: _HandpieceengineSymptomKeyList ,0x11111115: _AirinletSymptomKeyList ,    0x11111116: _AiroutletSymptomKeyList ,
-                 0x111131111: _DollSymptomKeyList ,     0x111131112:_MonitorSymptomKeyList , 0x111131113:_LightSymptomKeyList ,  
-                 0x111131114:_3WaySymptomKeyList ,      0x111131115: _HighspeedConnectorSymptomKeyList   ,     0x111131116:_LowspeedConnectorSymptomKeyList ,
-                 0x111132111: _HighspeedHandpieceSymptomKeyList,    0x111132112: _LowspeedHandpieceSymptomList,                
-                 0x11114111: _MonitorSymptomKeyList ,  0x11114112:_CombodySymptomKeyList,  0x11114113:_ComnetworkSymptomKeyList ,
-                 0x1111111111: _YesorNoKeyListv2,    0x1111411111: _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
-                 0x11113111111: _YesorNoKeyListv2,   0x11113211111: _YesorNoKeyListv2                      
+                 nx_Child_in(first_Independent_IDInsert_State,2): _YesorNoKeyList ,                 
+                 nx_Child_in(first_Independent_IDInsert_State,3): _YesorNoKeyList  ,   
+                 nx_Child_in(initial_State,3): _State1KeyList ,             
+                 nx_Child_Sibling_in(initial_State,4,2):  _State13KeyList,            
+                 nx_Child_in(first_4work_State,1): _State111KeyList,          nx_Child_in(first_3com_State,1): _State141KeyList,  
+                 nx_Child_in(first_3work_State,1): _State1311KeyList ,       nx_Child_in(first_3handpiece_State,1) : _State1321KeyList, 
+                 nx_Child_in(first_4work_State,3): _LightSymptomKeyList  ,         nx_Child_Sibling_in(first_4work_State,3,1): _MonitorSymptomKeyList ,     
+                 nx_Child_Sibling_in(first_4work_State,3,2) : _GastorchSymptomKeyList , nx_Child_Sibling_in(first_4work_State,3,3): _HandpieceengineSymptomKeyList ,
+                 nx_Child_Sibling_in(first_4work_State,3,4): _AirinletSymptomKeyList ,    nx_Child_Sibling_in(first_4work_State,3,5): _AiroutletSymptomKeyList ,
+                 nx_Child_in(first_3work_State,3): _DollSymptomKeyList ,     nx_Child_Sibling_in(first_3work_State,3,1):_MonitorSymptomKeyList , 
+                 nx_Child_Sibling_in(first_3work_State,3,2):_LightSymptomKeyList ,  nx_Child_Sibling_in(first_3work_State,3,3):_3WaySymptomKeyList ,      
+                 nx_Child_Sibling_in(first_3work_State,3,4): _HighspeedConnectorSymptomKeyList   ,     nx_Child_Sibling_in(first_3work_State,3,5):_LowspeedConnectorSymptomKeyList ,
+                 nx_Child_in(first_3handpiece_State,3): _HighspeedHandpieceSymptomKeyList,    nx_Child_Sibling_in(first_3handpiece_State,3,1): _LowspeedHandpieceSymptomList,                
+                 nx_Child_in(first_3com_State,3): _MonitorSymptomKeyList ,  nx_Child_Sibling_in(first_3com_State,3,1):_CombodySymptomKeyList,  
+                 nx_Child_Sibling_in(first_3com_State,3,2):_ComnetworkSymptomKeyList ,
+                 nx_Child_in(first_4work_State,5): _YesorNoKeyListv2,    nx_Child_in(first_3com_State,5): _YesorNoKeyListv2,   #1111411111: _YesorNoKeyList,
+                 nx_Child_in(first_3work_State,5): _YesorNoKeyListv2,    nx_Child_in(first_3handpiece_State,5): _YesorNoKeyListv2                      
 }
 
 StatePhotoList = {  
-                    0x11111:   {"url": u'static/images/4work_seats.png' , "width": 548, "height": 482 } ,
-                    0x111111:  {"url": u'static/images/4work_oneseat.png' ,"width": 200, "height": 283 } ,
-                    0x111131:  {"url": u'static/images/4work_seats.png'  ,"width": 548 ,"height": 482 }, 
-                    0x1111311: {"url": u'static/images/3work_oneseat.png' ,"width": 200, "height": 283 } ,
-                    0x111132:  {"url": u'static/images/3work_case.png' ,"width": 230,"height": 218}, 
-                    0x1111321: {"url": u'static/images/3work_caseopen.png' ,"width": 200,"height": 283 } ,
-                    0x11114:   {"url": u'static/images/3com_seats.png' ,   "width": 662,"height": 465 }, 
-                    0x111141:  {"url": u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
+                    first_4work_State:   {"url": u'static/images/4work_seats.png' , "width": 548, "height": 482 } ,
+                    nx_Child_in(first_4work_State,1):  {"url": u'static/images/4work_oneseat.png' ,"width": 200, "height": 283 } ,
+                    first_3work_State:  {"url": u'static/images/4work_seats.png'  ,"width": 548 ,"height": 482 }, 
+                    nx_Child_in(first_3work_State,1): {"url": u'static/images/3work_oneseat.png' ,"width": 200, "height": 283 } ,
+                    first_3handpiece_State:  {"url": u'static/images/3work_case.png' ,"width": 230,"height": 218}, 
+                    nx_Child_in(first_3handpiece_State,1): {"url": u'static/images/3work_caseopen.png' ,"width": 200,"height": 283 } ,
+                    first_3com_State:   {"url": u'static/images/3com_seats.png' ,   "width": 662,"height": 465 }, 
+                    nx_Child_in(first_3com_State,1):  {"url": u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 #                    141:  {"url": request.url_root+u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 }
 
@@ -617,121 +642,166 @@ AskPasswordString = u'Password를 입력해주세요'
 AskMovementString = u'이동하실 메뉴를 선택해주세요\n ex)1:초기메뉴'
 AskInputModeString = u'어떤 입력 방식으로  변경하시겠습니까?'
 
-fromStateMessageList = {  0x1:SelectString+u'\n' ,
-                          0x11:SelectString+u'\n' ,
-                          0x14:SelectString+u'\n' ,          0x111:SelectString+u'\n' ,          
-                          0x1111:SelectString+u'\n' ,
-                          0x11113:SelectString+u'\n' ,
-                          0x11111:InsertedString+u'\n' ,    0x11114:SelectString+u'\n' ,          0x111131:SelectString+u'\n' ,       0x111132:SelectString+u'\n' ,                                                 
-                          0x111111:InsertedString+u'\n' ,   0x111141:SelectString+u'\n' ,         0x1111311:SelectString+u'\n' ,      0x1111321:SelectString+u'\n' ,
-                          0x1111111:SelectString+u'\n' ,    0x1111411:SelectString+u'\n' ,        0x11113111:SelectString+u'\n' ,     0x11113211:SelectString+u'\n' ,
-                          0x11111111:SelectString+u'\n' ,   0x11114111:SelectString+u'\n' ,       0x111131111:SelectString+u'\n' ,    0x111132111:SelectString+u'\n' ,
-                          0x11111112:SelectString+u'\n' ,   0x11114112:SelectString+u'\n' ,       0x111131112:SelectString+u'\n' ,    0x111132112:SelectString+u'\n' ,
-                          0x11111113:SelectString+u'\n' ,   0x11114113:SelectString+u'\n' ,       0x111131113:SelectString+u'\n' ,                           
-                          0x11111114:SelectString+u'\n' ,                                         0x111131114:SelectString+u'\n' ,  
-                          0x11111115:SelectString+u'\n' ,                                         0x111131115:SelectString+u'\n' ,
-                          0x11111116:SelectString+u'\n' ,                                         0x111131116:SelectString+u'\n' ,
-                          0x111111111:SelectString+u'\n' ,  0x111141111:SelectString+u'\n' ,      0x1111311111:SelectString+u'\n' ,   0x1111321111:SelectString+u'\n' ,     
-                          0x1111111111:SelectString+SubmitString+u'\n' ,0x1111411111:SelectString+SubmitString+u'\n' ,
-                          0x11113111111:SelectString+SubmitString+u'\n' ,0x11113211111:SelectString+SubmitString+u'\n' ,
-                          0x141:SelectString+u'\n' ,        0x142:SelectString+u'\n' ,            0x143:SelectString+u'\n' ,         
-                          0x145:SelectString+u'\n' ,          
-                          0x1411:SelectString+ u'\n' ,                                            0x1451:SelectString+u'\n' ,
-                          0x14111:SelectString+ u'\n'
+fromStateMessageList = {  initial_State:SelectString+u'\n' ,
+                          nx_Child_in(initial_State,1):SelectString+u'\n' ,
+                          first_Independent_IDInsert_State:SelectString+u'\n' ,        
+                          nx_Child_Sibling_in(initial_State,1,3):SelectString+u'\n' ,          
+                          0x142:SelectString+u'\n' ,            0x143:SelectString+u'\n' ,         
+                          0x145:SelectString+u'\n' , 
+                          0x1451:SelectString+u'\n' ,         
+                          nx_Child_in(initial_State,2):SelectString+u'\n' ,          
+                          nx_Child_in(first_Independent_IDInsert_State,1):SelectString+ u'\n' ,                                           
+                          nx_Child_in(initial_State,3):SelectString+u'\n' ,
+                          nx_Child_in(first_Independent_IDInsert_State,2):SelectString+ u'\n',
+                          nx_Child_Sibling_in(initial_State,4,2):SelectString+u'\n' ,
+                          first_4work_State:InsertedString+u'\n' ,    first_3com_State:SelectString+u'\n' ,          
+                          first_3work_State:SelectString+u'\n' ,       first_3handpiece_State:SelectString+u'\n' ,                                                 
+                          nx_Child_in(first_4work_State,1):InsertedString+u'\n' ,   nx_Child_in(first_3com_State,1):SelectString+u'\n' ,         
+                          nx_Child_in(first_3work_State,1):SelectString+u'\n' ,     nx_Child_in(first_3handpiece_State,1):SelectString+u'\n' ,
+                          nx_Child_in(first_4work_State,2):SelectString+u'\n' ,     nx_Child_in(first_3com_State,2):SelectString+u'\n' ,        
+                          nx_Child_in(first_3work_State,2):SelectString+u'\n' ,     nx_Child_in(first_3handpiece_State,2):SelectString+u'\n' ,
+                          nx_Child_in(first_4work_State,3):SelectString+u'\n' ,     nx_Child_in(first_3com_State,3):SelectString+u'\n' ,       
+                          nx_Child_in(first_3work_State,3):SelectString+u'\n' ,     nx_Child_in(first_3handpiece_State,3):SelectString+u'\n' ,
+                          nx_Child_Sibling_in(first_4work_State,3,1):SelectString+u'\n' ,   nx_Child_Sibling_in(first_3com_State,3,1):SelectString+u'\n' ,       
+                          nx_Child_Sibling_in(first_3work_State,3,1):SelectString+u'\n' ,   nx_Child_Sibling_in(first_3handpiece_State,3,1):SelectString+u'\n' ,
+                          nx_Child_Sibling_in(first_4work_State,3,2):SelectString+u'\n' ,   nx_Child_Sibling_in(first_3com_State,3,2):SelectString+u'\n' ,       
+                          nx_Child_Sibling_in(first_3work_State,3,2):SelectString+u'\n' ,                           
+                          nx_Child_Sibling_in(first_4work_State,3,3):SelectString+u'\n' ,   nx_Child_Sibling_in(first_3work_State,3,3):SelectString+u'\n' ,  
+                          nx_Child_Sibling_in(first_4work_State,3,4):SelectString+u'\n' ,   nx_Child_Sibling_in(first_3work_State,3,4):SelectString+u'\n' ,
+                          nx_Child_Sibling_in(first_4work_State,3,5):SelectString+u'\n' ,   nx_Child_Sibling_in(first_3work_State,3,5):SelectString+u'\n' ,
+                          nx_Child_in(first_4work_State,4):SelectString+u'\n' ,  nx_Child_in(first_3com_State,4):SelectString+u'\n' ,      
+                          nx_Child_in(first_3work_State,4):SelectString+u'\n' ,   nx_Child_in(first_3handpiece_State,4):SelectString+u'\n' ,     
+                          nx_Child_in(first_4work_State,5):SelectString+SubmitString+u'\n' ,nx_Child_in(first_3com_State,5):SelectString+SubmitString+u'\n' ,
+                          nx_Child_in(first_3work_State,5):SelectString+SubmitString+u'\n' ,nx_Child_in(first_3handpiece_State,5):SelectString+SubmitString+u'\n' 
 }
 
-toStateMessageList = {    0x1:u'',                          
-                          0x1111:AskLocationString,
-                          0x11113:AskSeatHandpieceString,                                                    
-                          0x11111:AskSeatNumberString,       0x11114:AskSeatNumberString,                 0x111131:AskSeatNumberString,       0x111132:InsertCaseNumberString,                          
-                          0x111111:AskPartString,            0x111141:AskPartString,                      0x1111311:AskPartString,            0x1111321:AskPartString,       
-                          0x1111111:DirectInsertPartString,  0x1111411:DirectInsertPartString,            0x11113111:DirectInsertPartString,  0x11113211:DirectInsertPartString,
-                          0x11114111:AskSymptomString ,                  
-                          0x11114112:AskSymptomString ,                                            
-                          0x11114113:AskSymptomString ,
-                          0x11111111:AskSymptomString ,       
-                          0x11111112:AskSymptomString ,                                                   
-                          0x11111113:AskSymptomString ,
-                          0x11111114:AskSymptomString ,
-                          0x11111115:AskSymptomString ,
-                          0x11111116:AskSymptomString ,
-                          0x111131111:AskSymptomString,       
-                          0x111131112:AskSymptomString,    
-                          0x111131113:AskSymptomString,
-                          0x111131114:AskSymptomString,
-                          0x111131115:AskSymptomString,
-                          0x111131116:AskSymptomString ,        
-                          0x111132111:AskSymptomString,   
-                          0x111132112:AskSymptomString, 
-                          0x111111111:DirectInsertSymptomString,  0x111141111:DirectInsertSymptomString,                0x1111311111:DirectInsertSymptomString,  0x1111321111:DirectInsertSymptomString,
-                          0x14:u'',
-                          0x11:InsertIDString,                     0x141:InsertIDString,                  0x142:AskDeletionString,    
-                          0x143: AskInputModeString,               0x145:AskPasswordString,
-                          0x111:InsertNameString,                  0x1411:InsertNameString,                                           0x1451:AskMovementString,
+toStateMessageList = {    initial_State:u'',
+                          nx_Child_in(initial_State,1):InsertIDString,
+                          first_Independent_IDInsert_State:InsertIDString,
+                          nx_Child_Sibling_in(initial_State,1,3):u'',
+                          nx_Child_in(initial_State,2):InsertNameString,                          
+                          nx_Child_in(first_Independent_IDInsert_State,1):InsertNameString,
+                          0x142:AskDeletionString,                                 0x143: AskInputModeString,               
+                          0x145:AskPasswordString,
+                          0x1451:AskMovementString,
+                          nx_Child_in(initial_State,3):AskLocationString,
+                          nx_Child_Sibling_in(initial_State,4,2):AskSeatHandpieceString,                                                    
+                          first_4work_State:AskSeatNumberString,       first_3com_State:AskSeatNumberString,                 
+                          first_3work_State:AskSeatNumberString,       first_3handpiece_State:InsertCaseNumberString,                          
+                          nx_Child_in(first_4work_State,1):AskPartString,            nx_Child_in(first_3com_State,1):AskPartString,                      
+                          nx_Child_in(first_3work_State,1):AskPartString,            nx_Child_in(first_3handpiece_State,1):AskPartString,       
+                          nx_Child_in(first_4work_State,2):DirectInsertPartString,  nx_Child_in(first_3com_State,2):DirectInsertPartString,
+                          nx_Child_in(first_3work_State,2):DirectInsertPartString,  nx_Child_in(first_3handpiece_State,2):DirectInsertPartString,
+                          nx_Child_in(first_3com_State,3):AskSymptomString ,                  
+                          nx_Child_Sibling_in(first_3com_State,3,1):AskSymptomString ,                                            
+                          nx_Child_Sibling_in(first_3com_State,3,2):AskSymptomString ,
+                          nx_Child_in(first_4work_State,3):AskSymptomString ,       
+                          nx_Child_Sibling_in(first_4work_State,3,1):AskSymptomString ,                                                   
+                          nx_Child_Sibling_in(first_4work_State,3,2):AskSymptomString ,
+                          nx_Child_Sibling_in(first_4work_State,3,3):AskSymptomString ,
+                          nx_Child_Sibling_in(first_4work_State,3,4):AskSymptomString ,
+                          nx_Child_Sibling_in(first_4work_State,3,5):AskSymptomString ,
+                          nx_Child_in(first_3work_State,3):AskSymptomString,       
+                          nx_Child_Sibling_in(first_3work_State,3,1):AskSymptomString,    
+                          nx_Child_Sibling_in(first_3work_State,3,2):AskSymptomString,
+                          nx_Child_Sibling_in(first_3work_State,3,3):AskSymptomString,
+                          nx_Child_Sibling_in(first_3work_State,3,4):AskSymptomString,
+                          nx_Child_Sibling_in(first_3work_State,3,5):AskSymptomString ,        
+                          nx_Child_in(first_3handpiece_State,3):AskSymptomString,   
+                          nx_Child_Sibling_in(first_3handpiece_State,3,1):AskSymptomString, 
+                          nx_Child_in(first_4work_State,4):DirectInsertSymptomString,  nx_Child_in(first_3com_State,4):DirectInsertSymptomString,       
+                          nx_Child_in(first_3work_State,4):DirectInsertSymptomString,  nx_Child_in(first_3handpiece_State,4):DirectInsertSymptomString
 }
 
 toSymptomStateMessageListsList = {
-                0x11111111: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,         
-                0x11111112: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] , 
-                0x11111113: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_GastorchSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,      
-                0x11111114: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HandpieceengineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] , 
-                0x11111115: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AirinletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,     
-                0x11111116: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AiroutletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
-                0x111131111:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DollSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],       
-                0x111131112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],    
-                0x111131113:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
-                0x111131114:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_3WaySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
-                0x111131115:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
-                0x111131116:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,       
-                0x111132111:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,    
-                0x111132112:[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
-                0x11114111: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,                  
-                0x11114112: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,                                            
-                0x11114113: [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] 
+                nx_Child_in(first_4work_State,3): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,         
+                nx_Child_Sibling_in(first_4work_State,3,1): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] , 
+                nx_Child_Sibling_in(first_4work_State,3,2): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_GastorchSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,      
+                nx_Child_Sibling_in(first_4work_State,3,3): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HandpieceengineSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] , 
+                nx_Child_Sibling_in(first_4work_State,3,4): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AirinletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,     
+                nx_Child_Sibling_in(first_4work_State,3,5): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_AiroutletSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
+                nx_Child_in(first_3work_State,3):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_DollSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],       
+                nx_Child_Sibling_in(first_3work_State,3,1):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],    
+                nx_Child_Sibling_in(first_3work_State,3,2):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LightSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
+                nx_Child_Sibling_in(first_3work_State,3,3):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_3WaySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
+                nx_Child_Sibling_in(first_3work_State,3,4):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString],
+                nx_Child_Sibling_in(first_3work_State,3,5):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedConnectorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,       
+                nx_Child_in(first_3handpiece_State,3):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_HighspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,    
+                nx_Child_Sibling_in(first_3handpiece_State,3,1):[AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_LowspeedHandpieceSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,   
+                nx_Child_in(first_3com_State,3): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_MonitorSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,                  
+                nx_Child_Sibling_in(first_3com_State,3,1): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_CombodySymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] ,                                            
+                nx_Child_Sibling_in(first_3com_State,3,2): [AskSymptomString, DirectInsertSymptomString, AskMultiSymptomString+u'\n'+_ComnetworkSymptomJoinString+u'\n\n'+ExplainSymptomInsertionString] 
 
 }
 
 push_StateList = {
-                  0x1111111:True, 0x11111111:True, 0x11111112:True, 0x11111113:True, 0x11111114:True, 0x11111115:True, 0x11111116:True, 0x111111111:True,
-                  0x1111411:True, 0x11114111:True, 0x11114112:True, 0x11114113:True,                                                    0x111141111:True,
-                  0x11113111:True,0x111131111:True,0x111131112:True,0x111131113:True,0x111131114:True,0x111131115:True,0x111131116:True,0x1111311111:True,                
-                  0x11113211:True,0x111132111:True,0x111132112:True,                                                                    0x1111321111:True,
+                  nx_Child_in(first_4work_State,2):True, 
+                  nx_Child_in(first_4work_State,3):True, nx_Child_Sibling_in(first_4work_State,3,1):True, 
+                  nx_Child_Sibling_in(first_4work_State,3,2):True, nx_Child_Sibling_in(first_4work_State,3,3):True, 
+                  nx_Child_Sibling_in(first_4work_State,3,4):True, nx_Child_Sibling_in(first_4work_State,3,5):True, 
+                  nx_Child_in(first_4work_State,4):True,
+                  nx_Child_in(first_3com_State,2):True, 
+                  nx_Child_in(first_3com_State,3):True, nx_Child_Sibling_in(first_3com_State,3,1):True, 
+                  nx_Child_Sibling_in(first_3com_State,3,2):True,                                                    
+                  nx_Child_in(first_3com_State,4):True,
+                  nx_Child_in(first_3work_State,2):True,
+                  nx_Child_in(first_3work_State,3):True,nx_Child_Sibling_in(first_3work_State,3,1):True,
+                  nx_Child_Sibling_in(first_3work_State,3,2):True,nx_Child_Sibling_in(first_3work_State,3,3):True,
+                  nx_Child_Sibling_in(first_3work_State,3,4):True,nx_Child_Sibling_in(first_3work_State,3,5):True,
+                  nx_Child_in(first_3work_State,4):True,                
+                  nx_Child_in(first_3handpiece_State,2):True,
+                  nx_Child_in(first_3handpiece_State,3):True,nx_Child_Sibling_in(first_3handpiece_State,3,1):True,                                                                    
+                  nx_Child_in(first_3handpiece_State,4):True
 }
 
 pop_pushedStateList = {
-                       0x111111111:True , 0x111141111:True , 0x1111311111:True ,  0x1111321111:True     
+                       nx_Child_in(first_4work_State,4):True , nx_Child_in(first_3com_State,4):True , 
+                       nx_Child_in(first_3work_State,4):True ,  nx_Child_in(first_3handpiece_State,4):True     
 }   
 
-initial_State          = 0x1
+#initial_State          = 0x1
 
-first_4work_State      = 0x11111
-first_4eng_State       = 0x11112
-first_3work_State      = 0x111131
-first_3handpiece_State = 0x111132
-first_3com_State       = 0x11114
+#first_4work_State      = 0x11111
+#first_4eng_State       = 0x11112
+#first_3work_State      = 0x111131
+#first_3handpiece_State = 0x111132
+#first_3com_State       = 0x11114
 
-first_Independent_IDInsert_State = 0x141
+#first_Independent_IDInsert_State = 0x141
 
 
-state = { 0x1:0x1 , 
-          0x11:0x11,                     0x2:0x2,                     0x3:0x3,                    0x14:0x14 , 
-          0x111:0x111,
-          0x1111:0x1111,
-          0x11111:0x11111 ,                  0x11114:0x11114,                   0x11113:0x11113,                  0x141:0x141,                   0x142:0x142,            
-          0x143:0x143,                       0x145:0x145,         0x1451:0x1451,
-          0x111111:0x111111 ,                0x111131:0x111131,                 0x111132:0x111132,                0x111141:0x111141,             0x1411:0x1411,
-          0x1111111:0x1111111 ,              0x1111311:0x1111311,               0x1111321:0x1111321,              0x1111411:0x1111411,           0x14111:0x14111 , 
-          0x11111111:0x11111111 ,            0x11111112:0x11111112,             0x11111113:0x11111113,            0x11111114:0x11111114 ,        0x11111115:0x11111115,
-          0x11111116:0x11111116,                          
-          0x11113111:0x11113111,             0x11113211:0x11113211,    
-          0x11114111:0x11114111,             0x11114112:0x11114112,             0x11114113:0x11114113,
-          0x141111:0x141111 ,     
-          0x111111111:0x111111111,           0x111141111:0x111141111,       
-          0x111131111:0x111131111  ,         0x111131112:0x111131112 ,          0x111131113:0x111131113 ,        0x111131114:0x111131114 ,     0x111131115:0x111131115 ,  0x111131116:0x111131116 , 
-          0x111132111:0x111132111  ,         0x111132112:0x111132112 ,          0x111132113:0x111132113 , #??           
-                                             0x1111311111:0x1111311111 ,        0x1111321111:0x1111321111 ,         
-          0x1111111111:0x1111111111,         0x1111311111:0x1111311111,         0x1111321111:0x1111321111,        0x1111411111:0x1111411111,    
-                                             0x11113111111:0x11113111111,       0x11113211111:0x11113211111             
+state = { initial_State:0x1 , 
+          nx_Child_in(initial_State,1):0x11,                     0x2:0x2,                     0x3:0x3,                    
+          nx_Child_Sibling_in(initial_State,1,3):0x14 , 
+          nx_Child_in(initial_State,2):0x111,
+          first_Independent_IDInsert_State:0x141,                   0x142:0x142,              0x143:0x143,                       0x145:0x145,     
+          nx_Child_in(first_Independent_IDInsert_State,1):0x1411,
+          nx_Child_in(first_Independent_IDInsert_State,2):0x14111 ,   
+          #nx_Child_in(first_Independent_IDInsert_State,3):0x141111 ,
+          0x1451:0x1451,
+          nx_Child_in(initial_State,3):0x1111,                                
+          nx_Child_Sibling_in(initial_State,4,2):0x11113, 
+          first_4work_State:0x11111 ,                                first_3com_State:0x11114,                                         
+          first_3work_State:0x111131,                                first_3handpiece_State:0x111132,                            
+          nx_Child_in(first_4work_State,1):0x111111 ,                nx_Child_in(first_3com_State,1):0x111141,       
+          nx_Child_in(first_3work_State,1):0x1111311,                nx_Child_in(first_3handpiece_State,1):0x1111321,  
+          nx_Child_in(first_4work_State,2):0x1111111 ,               nx_Child_in(first_3com_State,2):0x1111411,   
+          nx_Child_in(first_3work_State,2):0x11113111,               nx_Child_in(first_3handpiece_State,2):0x11113211,    
+                                
+          nx_Child_in(first_4work_State,3):0x11111111 ,              nx_Child_in(first_3com_State,3):0x11114111,               
+          nx_Child_in(first_3work_State,3):0x111131111  ,            nx_Child_in(first_3handpiece_State,3):0x111132111  ,  
+          nx_Child_Sibling_in(first_4work_State,3,1):0x11111112,     nx_Child_Sibling_in(first_3com_State,3,1):0x11114112,
+          nx_Child_Sibling_in(first_3work_State,3,1):0x111131112 ,   nx_Child_Sibling_in(first_3handpiece_State,3,1):0x111132112 ,
+          nx_Child_Sibling_in(first_4work_State,3,2):0x11111113,     nx_Child_Sibling_in(first_3com_State,3,2):0x11114113,  
+          nx_Child_Sibling_in(first_3work_State,3,2):0x111131113 ,
+          nx_Child_Sibling_in(first_4work_State,3,3):0x11111114 ,    nx_Child_Sibling_in(first_3work_State,3,3):0x111131114 ,        
+          nx_Child_Sibling_in(first_4work_State,3,4):0x11111115,     nx_Child_Sibling_in(first_3work_State,3,4):0x111131115 ,
+          nx_Child_Sibling_in(first_4work_State,3,5):0x11111116,     nx_Child_Sibling_in(first_3work_State,3,5):0x111131116 ,                          
+          nx_Child_in(first_4work_State,4):0x111111111,              nx_Child_in(first_3com_State,4):0x111141111,
+          nx_Child_in(first_3work_State,4):0x1111311111 ,            nx_Child_in(first_3handpiece_State,4):0x1111321111 ,                                                                                                   
+          nx_Child_in(first_4work_State,5):0x1111111111,             nx_Child_in(first_3com_State,5):0x1111411111,    
+          nx_Child_in(first_3work_State,5):0x11113111111,            nx_Child_in(first_3handpiece_State,5):0x11113211111,              
+          0x111132113:0x111132113  #??           
 }
 
 _4EngSymptomStateList = []
@@ -739,14 +809,7 @@ _4EngDevSNList = {}
 
 len_4eng_tables = 0xc
 def generate4EngStatesInformation() :
-    def  _nx_Child_in(stage_num , score) :
-        if score == 0 :
-            return stage_num
-        else :
-            return _nx_Child_in(stage_num * 0x10 +1 , score-1)
-    def  nx_Child_in( stage_num , score ) :
-        num = _nx_Child_in(stage_num, score)
-        return num
+
     len_tables = len_4eng_tables
     #len_devices_per_table = [7,3,3,3, 5,3,3,5, 5,4,3,4 ]
     len_devices_per_table = []
