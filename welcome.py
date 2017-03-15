@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.04'
+VersionString = u'1.05'
 
 
 _State0KeyList = [ 
@@ -1388,6 +1388,8 @@ class SummaryText :
         if _OnlyPart == False :
             self.mText += u'ID         :' + str(_organization[ _UserRequestKey ][IDString])+u'\n'
             self.mText += u'Name       :' + _organization[ _UserRequestKey ][NameString]+u'\n'
+            if  GradeString in _organization[ _UserRequestKey ].keys() :
+                self.mText += u'Grade       :' + str(_organization[ _UserRequestKey ][GradeString ])+u'\n'
 
         if _key1 is None :
             self.mText += u'location   :' + _instance[ _UserRequestKey ][LocationString]+u'\n'
@@ -1419,6 +1421,8 @@ class SummaryText :
                 _element = { 'user_key':_userkey }
                 _element[IDString]     = _organization[_userkey][IDString]
                 _element[NameString]   = _organization[_userkey][NameString]
+                if GradeString in _organization[_userkey].keys() :
+                    _element[GradeString ]   = _organization[_userkey][GradeString ]
                 _element[SymptomString] = _ins[SymptomString]
                 _element[PartString]   = _ins[PartString]
                 _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
@@ -1447,6 +1451,8 @@ class SummaryText :
                 _element = { 'user_key':_userkey }
                 _element[IDString]     = _organization[_userkey][IDString]
                 _element[NameString]   = _organization[_userkey][NameString]
+                if GradeString in _organization[_userkey].keys() :
+                    _element[GradeString ]   = _organization[_userkey][GradeString ]
                 _element[SymptomString] = _ins[SymptomString]
                 _element[PartString]   = _ins[PartString]
                 _sumins_org_regrouping[_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
@@ -1747,17 +1753,9 @@ def GetMessage():
             else :
                 temp_organization[userRequest['user_key']][NameString] = userRequest['content'] 
                 temp_organization[userRequest['user_key']][InputModeString ] = 0     # intput mode is set as default (0) 
+                return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
 
-                if currentState == nx_Child(first_Independent_IDInsert_State,1) :
-                    _textMessage = userRequest['content']+SelectString+u'\n'+  LastYesNoString +u'\n'
-                    _textMessage += u'ID   :'+ str(temp_organization[userRequest['user_key']][IDString])+u'\n'
-                    _textMessage += u'Name :'+ temp_organization[userRequest['user_key']][NameString]
-                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,2) , userRequest)             
-                    ##return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
-                else :
-                    return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2) , userRequest ) 
-                    ##return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
-
+        # insert Grade
         elif   instance[userRequest['user_key']][StateString]  \
             in [  nx_Child(initial_State,3),   nx_Child(first_Independent_IDInsert_State,2) ]  :               #111 , 1411
             currentState = instance[userRequest['user_key']][StateString] 
@@ -1799,7 +1797,11 @@ def GetMessage():
                         organization[userRequest['user_key']] = {}    
                     organization[userRequest['user_key']][IDString] = temp_organization[userRequest['user_key']][IDString]    
                     organization[userRequest['user_key']][NameString] = temp_organization[userRequest['user_key']][NameString]   
-                    if  InputModeString not in organization[userRequest['user_key']] :
+                    if  GradeString in temp_organization[userRequest['user_key']] and  GradeString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][GradeString ] = temp_organization[userRequest['user_key']][GradeString ]   
+                    if  RecordedYearString in temp_organization[userRequest['user_key']] and RecordedYearString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][RecordedYearString ] = temp_organization[userRequest['user_key']][RecordedYearString ]   
+                    if  InputModeString in temp_organization[userRequest['user_key']] and  InputModeString not in organization[userRequest['user_key']] :
                         organization[userRequest['user_key']][InputModeString] = temp_organization[userRequest['user_key']][InputModeString]   
 
                     temp_organization.pop( userRequest['user_key'] ,  None)
@@ -1807,8 +1809,7 @@ def GetMessage():
                 instance[userRequest['user_key']] = { StateString : initial_State }            
                 return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, initial_State, userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][2] :
-                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest)
-                ##return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)
+                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)
             else : 
                 _textMessage = userRequest['content']+ u'\n'+ CancelString 
                 instance[userRequest['user_key']] = { StateString : initial_State }            
@@ -1833,10 +1834,9 @@ def GetMessage():
                 if userRequest['user_key'] in organization :
                   return Arrow().make_Message_Button_change_State( currentState , prev_Parent(currentState,4) , userRequest)
                   ##return Arrow().make_Message_Button_change_State( currentState , prev_Parent(currentState,3) , userRequest)
-
                 else :
-                  return Arrow().make_Message_Button_change_State( currentState,  prev_Parent(currentState,2) , userRequest  )            
-                  ##return Arrow().make_Message_Button_change_State( currentState,  prev_Parent(currentState,1) , userRequest  )            
+                  ##return Arrow().make_Message_Button_change_State( currentState,  prev_Parent(currentState,2) , userRequest  )            
+                  return Arrow().make_Message_Button_change_State( currentState,  prev_Parent(currentState,1) , userRequest  )            
             else :
                 _textMessage = userRequest['content']+SelectString+u'\n'+'(state:'+ str(instance[userRequest['user_key']][StateString]) + ')'
                 instance[userRequest['user_key']] = { StateString : initial_State }            
@@ -1848,11 +1848,14 @@ def GetMessage():
             if  userRequest['content']  ==  StateButtonList[currentState][0] :
                 if  userRequest['user_key'] in organization :
                     key = userRequest['user_key']
-                    _text_  = u'이미 입력된 ID와 Name이 있습니다.'+u'\n'
-                    _text_ += u'기존 ID   :'+ str(organization[key][IDString])+u'\n'
-                    _text_ += u'기존 Name :'+ organization[key][NameString]+u'\n\n'
-                    _text_ += toStateMessageList[first_Independent_IDInsert_State]+u'\n'
-                    return Arrow()._make_Message_Button_change_State(True, _text_, False, currentState, first_Independent_IDInsert_State , userRequest )            
+                    _textMessage  = u'이미 입력된 ID와 Name이 있습니다.'+u'\n'
+                    _textMessage += u'기존 ID   :'+ str(organization[key][IDString])+u'\n'
+                    _textMessage += u'기존 Name :'+ organization[key][NameString]+u'\n'
+                    if  GradeString in  organization[userRequest['user_key']]  :
+                        _textMessage += u'Grade :'+ str(organization[key][GradeString ])+u'\n'
+                    _textMessage += u'\n'
+                    _textMessage += toStateMessageList[first_Independent_IDInsert_State]+u'\n'
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, False, currentState, first_Independent_IDInsert_State , userRequest )            
 
                     #fill this later. for one user multi device case
                     #elif organization[key]['ID'] == temp_organization[userRequest['user_key']]['ID'] :
@@ -1868,10 +1871,12 @@ def GetMessage():
 
             elif  userRequest['content']  ==  StateButtonList[currentState][1] :
                 if userRequest['user_key'] in organization:
-                    _text_ = userRequest['content']+SelectString + u'\n' + AskDeletionString+ u'\n'
-                    _text_ += u'ID   :'+ str(organization[userRequest['user_key']][IDString])+u'\n'
-                    _text_ += u'Name :'+ organization[userRequest['user_key']][NameString]+u'\n'
-                    return Arrow()._make_Message_Button_change_State(True, _text_, True, currentState, nx_Child_Sibling(currentState,1,1) , userRequest )            
+                    _textMessage = userRequest['content']+SelectString + u'\n' + AskDeletionString+ u'\n'
+                    _textMessage += u'ID   :'+ str(organization[userRequest['user_key']][IDString])+u'\n'
+                    _textMessage += u'Name :'+ organization[userRequest['user_key']][NameString]+u'\n'
+                    if  GradeString in  organization[userRequest['user_key']]  :
+                        _textMessage += u'Grade :'+ str(organization[userRequest['user_key']][GradeString ])+u'\n'
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child_Sibling(currentState,1,1) , userRequest )            
                 else : 
                     _text_ =  userRequest['content']+SelectString + u'\n' + u'등록된 ID와 Name이 없습니다.'           
                     return Arrow()._make_Message_Button_change_State( True, _text_, True, currentState,  initial_State , userRequest ) 
@@ -2090,7 +2095,12 @@ def GetMessage():
                     userRequest['user_key'] not in  organization :
                     organization[userRequest['user_key']] = { IDString :  temp_organization[userRequest['user_key']][IDString]    }
                     organization[userRequest['user_key']][NameString] = temp_organization[userRequest['user_key']][NameString]   
-                    if  InputModeString not in organization[userRequest['user_key']] :
+
+                    if  GradeString in temp_organization[userRequest['user_key']]        and  GradeString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][GradeString ] = temp_organization[userRequest['user_key']][GradeString ]   
+                    if  RecordedYearString in temp_organization[userRequest['user_key']] and RecordedYearString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][RecordedYearString ] = temp_organization[userRequest['user_key']][RecordedYearString ]   
+                    if  InputModeString in temp_organization[userRequest['user_key']]    and InputModeString not in organization[userRequest['user_key']] :
                         organization[userRequest['user_key']][InputModeString] = temp_organization[userRequest['user_key']][InputModeString]   
                     temp_organization.pop( userRequest['user_key'] ,  None)
 
@@ -2131,6 +2141,13 @@ def GetMessage():
                     userRequest['user_key'] not in  organization :
                     organization[userRequest['user_key']] = { IDString :  temp_organization[userRequest['user_key']][IDString]    }
                     organization[userRequest['user_key']][NameString] = temp_organization[userRequest['user_key']][NameString]   
+
+                    if  GradeString in temp_organization[userRequest['user_key']]        and  GradeString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][GradeString ] = temp_organization[userRequest['user_key']][GradeString ]   
+                    if  RecordedYearString in temp_organization[userRequest['user_key']] and RecordedYearString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][RecordedYearString ] = temp_organization[userRequest['user_key']][RecordedYearString ]   
+                    if  InputModeString in temp_organization[userRequest['user_key']]    and InputModeString not in organization[userRequest['user_key']] :
+                        organization[userRequest['user_key']][InputModeString] = temp_organization[userRequest['user_key']][InputModeString]   
                     temp_organization.pop( userRequest['user_key'] ,  None)
 
                 _UserRequestKey = userRequest['user_key']
