@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.05'
+VersionString = u'1.06'
 
 
 _State0KeyList = [ 
@@ -622,7 +622,7 @@ SubmitString = u'접수되었습니다.'
 CancelString = u'취소되었습니다'
 UnderConstructionString =u'-Under Construction-'
 UnInsertedString = u'필수 항목인 학번(혹은 사번)이 입력되지 않았습니다.'
-SameButtonString = u'중복 입력입니다'
+SameButtonString = u'accessing cloud...'
 ExplainSymptomInsertionString = u'----------------------------------------\n'
 ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1 2\n\t\t 물이 샘\n\t\t 1 2 물이 샘'
 #ExplainSymptomInsertionString +=u'ex) (복수 입력 가능)\n\t\t 2\n\t\t 1,2\n\t\t 물이 샘\n\t\t 1,2,물이 샘'
@@ -1288,7 +1288,13 @@ class  Arrow :
         return self._make_Messages_change_State(_TextFlag, _text , False , {} , False , {} , _ButtonFlag , _fromState ,_toState, _userRequest)
 
     def  make_Message_Button_change_State(self,  _fromState, _toState, _userRequest, _url_root=None)  :
-        _textMessage = _userRequest['content']+ fromStateMessageList[_fromState]  +   toStateMessageList[_toState]
+        #_textMessage = _userRequest['content']+ fromStateMessageList[_fromState]  +   toStateMessageList[_toState]
+        _textMessage = _userRequest['content']
+        if _fromState in  fromStateMessageList :
+            _textMessage += fromStateMessageList[_fromState]  
+        if _toState in  toStateMessageList :
+            _textMessage += toStateMessageList[_toState]
+
         _ButtonFlag = True
         _PhotoFlag  = True
         _Photo = {}
@@ -1645,6 +1651,9 @@ generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
 generateEmailFrom(gmailInformation)
 hello_world()
 
+PrevTimeString = u'prev'
+MessageTime = {}
+
 @app.route('/')
 def Welcome():
     return app.send_static_file('index.html')
@@ -1680,6 +1689,26 @@ def GetMessage():
         if  instance[userRequest['user_key']][StateString] != initial_State and \
             userRequest['content']  in  StateButtonList[initial_State] :
                 instance[userRequest['user_key']][StateString] = initial_State        
+
+        currentState = instance[userRequest['user_key']][StateString]
+        currentTime = datetime.now()
+
+        if userRequest['user_key'] not in MessageTime :
+            MessageTime[userRequest['user_key']] = { }
+            if  PrevTimeString not in MessageTime  :
+                MessageTime[userRequest['user_key']][PrevTimeString] = currentTime
+        else :
+            if  PrevTimeString not in MessageTime[userRequest['user_key']]  :
+                MessageTime[userRequest['user_key']][PrevTimeString] = currentTime
+            else  :
+                if  MessageTime[userRequest['user_key']][PrevTimeString] + timedelta(milliseconds=800) > currentTime :
+                    MessageTime[userRequest['user_key']][PrevTimeString] = currentTime
+                    _textMessage =  SameButtonString+hex(currentState)
+                    return Arrow().make_Message_Button_change_State(currentState, currentState, userRequest, request.url_root)            
+    #                return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)          
+                else  :
+                    MessageTime[userRequest['user_key']][PrevTimeString] = currentTime
+
 
         #select initially 
         if instance[userRequest['user_key']][StateString] ==  initial_State  :        #state 1
