@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.07'
+VersionString = u'1.08'
 
 
 _State0KeyList = [ 
@@ -646,8 +646,8 @@ ReInsertString = u'다시 입력해 주세요'
 InsertYesNoString = u'입력하시겠습니까?'
 LastYesNoString = u'최종 접수하시겠습니까'
 DirectInsertSymptomString = u'직접 증상을 입력해주세요\n0:이전 메뉴'
-DirectInsertPartString = u'직접 고장난 부분을 입력해주세요\n0:이전 메뉴'
-DirectInsertDeviceString = u'직접 고장난 기계를 입력해주세요\n0:이전 메뉴'
+DirectInsertPartString = u'고장난 부분과 증상을 한꺼번에 입력해주세요\n0:이전 메뉴'
+DirectInsertDeviceString = u'고장난 기계와 증상을 한꺼번에 입력해주세요\n0:이전 메뉴'
 
 InsertValidNumberString = u'범위 내의 숫자를 입력해주세요'
 InsertNumberString = u'숫자를 입력해주세요'
@@ -1960,7 +1960,7 @@ def GetMessage():
             else : 
                 _textMessage = userRequest['content']+SelectString+u'\n'+ InsertNumberString
                 return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, currentState , userRequest)
-
+        # insert device
         elif   instance[userRequest['user_key']][StateString] in \
         [ nx_Child(first_4work_State,1) ,  nx_Child(first_3work_State,1) , nx_Child(first_3handpiece_State,1) , nx_Child(first_3com_State ,1) ] + \
         list( range( nx_Child(first_4eng_State,1) , nx_Child_Sibling(first_4eng_State,1,12-1)+1) ) :
@@ -1982,6 +1982,7 @@ def GetMessage():
                 _textMessage = userRequest['content']+SelectString+u'\n'+'(state:'+ str(instance[userRequest['user_key']][StateString]) + ')'
                 instance[userRequest['user_key']] = { StateString : initial_State }            
                 return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,   initial_State, userRequest)
+        # direct insert device
         elif   instance[userRequest['user_key']][StateString] in \
          [ nx_Child(first_4work_State,2) , nx_Child(first_3work_State,2), nx_Child(first_3handpiece_State ,2) , nx_Child(first_3com_State ,2)] + \
          list( range(   nx_Child(nx_Child(first_4eng_State,1),1), nx_Child( nx_Child_Sibling(first_4eng_State,1,12-1), 1)+1 ,  0x10) ) :
@@ -1989,8 +1990,17 @@ def GetMessage():
             if  userRequest['content']  == '0' :
                 return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest, request.url_root)   
             instance[userRequest['user_key']][PartString] = userRequest['content']
-            return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2), userRequest)
-
+            #return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,2), userRequest)
+            instance[userRequest['user_key']][SymptomString] = u''            
+            # no ID info case
+            if userRequest['user_key'] not in organization:
+                _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])   
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  determineSubGraph(currentState ,5) , userRequest)             
+            # already have ID info   
+            else : 
+                _textMessage = SummaryText()._generate(LastYesNoString + u'\n' ,  organization , instance , userRequest['user_key'])                
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  determineSubGraph(currentState ,5) , userRequest)  
+        # insert symptom
         elif  instance[userRequest['user_key']][StateString] in \
         list( range(nx_Child(first_4work_State,3)+0, nx_Child(first_4work_State,3)+ len_4work_part-2 ) )  +  \
         list( range(nx_Child(first_3handpiece_State,3)+0, nx_Child(first_3handpiece_State,3)+ len_3handpiece_part-2 ) ) + \
