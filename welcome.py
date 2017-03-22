@@ -35,11 +35,11 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.06'
+VersionString = u'1.07'
 
 
 _State0KeyList = [ 
-    u'1.고장 접수',
+    u'1.고장 접수',   
     u'2.고장 접수 내역 확인',    
     u'3.사용방법 안내', 
     u'4.기타'
@@ -568,6 +568,8 @@ first_3handpiece_State = 0x1111132
 first_4eng_State       = 0x111112
 first_Independent_IDInsert_State = 0x141
 
+
+
 StateMultiChoiceList = {
                 nx_Child_in(first_4work_State,3): _LightSymptomMultiChoiceList  ,            nx_Child_Sibling_in(first_4work_State,3,1): _MonitorSymptomMultiChoiceList ,     
                 nx_Child_Sibling_in(first_4work_State,3,2):_GastorchSymptomMultiChoiceList , nx_Child_Sibling_in(first_4work_State,3,3): _HandpieceengineSymptomMultiChoiceList, 
@@ -582,7 +584,8 @@ StateMultiChoiceList = {
 
 StateButtonList = { initial_State: _State0KeyList, 
                   nx_Child_Sibling_in(initial_State,1,3): _State4KeyList ,
-                  0x142 : _YesorNoKeyList ,   0x143 : _InputModeList, 
+                  nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1) : _YesorNoKeyList ,   
+                  nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2) : _InputModeList, 
                  nx_Child_in(first_Independent_IDInsert_State,2): _GradeKeyList ,                 
                  nx_Child_in(first_Independent_IDInsert_State,3): _YesorNoKeyList  ,   
                  nx_Child_in(initial_State,3): _GradeKeyList ,  
@@ -660,9 +663,10 @@ fromStateMessageList = {  initial_State:SelectString+u'\n' ,
                           nx_Child_in(initial_State,1):SelectString+u'\n' ,
                           first_Independent_IDInsert_State:SelectString+u'\n' ,        
                           nx_Child_Sibling_in(initial_State,1,3):SelectString+u'\n' ,          
-                          0x142:SelectString+u'\n' ,            0x143:SelectString+u'\n' ,         
-                          0x145:SelectString+u'\n' , 
-                          0x1451:SelectString+u'\n' ,         
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1):SelectString+u'\n' ,            
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2):SelectString+u'\n' ,         
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4):SelectString+u'\n' , 
+                          nx_Child_in(nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4),1):SelectString+u'\n' ,         
                           nx_Child_in(initial_State,2):SelectString+u'\n' ,          
                           nx_Child_in(first_Independent_IDInsert_State,1):SelectString+ u'\n' ,                                           
                           nx_Child_in(initial_State,3):SelectString+u'\n' ,
@@ -698,9 +702,10 @@ toStateMessageList = {    initial_State:u'',
                           nx_Child_Sibling_in(initial_State,1,3):u'',
                           nx_Child_in(initial_State,2):InsertNameString,                          
                           nx_Child_in(first_Independent_IDInsert_State,1):InsertNameString,
-                          0x142:AskDeletionString,                                 0x143: AskInputModeString,               
-                          0x145:AskPasswordString,
-                          0x1451:AskMovementString,
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1):AskDeletionString,                                 
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2): AskInputModeString,               
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4):AskPasswordString,
+                          nx_Child_in(nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4),1):AskMovementString,
                           nx_Child_in(initial_State,3):InsertGradeString ,
                           nx_Child_in(first_Independent_IDInsert_State,2):InsertGradeString,
                           #nx_Child_Sibling_in(initial_State,4,2):AskSeatHandpieceString,                                                    
@@ -779,26 +784,19 @@ pop_pushedStateList = {
                        nx_Child_in(first_3work_State,4):True ,  nx_Child_in(first_3handpiece_State,4):True     
 }   
 
-#initial_State          = 0x1
-
-#first_4work_State      = 0x11111
-#first_4eng_State       = 0x11112
-#first_3work_State      = 0x111131
-#first_3handpiece_State = 0x111132
-#first_3com_State       = 0x11114
-
-#first_Independent_IDInsert_State = 0x141
-
 
 state = { initial_State:0x1 , 
-          nx_Child_in(initial_State,1):0x11,                     0x2:0x2,                     0x3:0x3,                    
+          nx_Child_in(initial_State,1):0x11,                                    
           nx_Child_Sibling_in(initial_State,1,3):0x14 , 
           nx_Child_in(initial_State,2):0x111,
-          first_Independent_IDInsert_State:0x141,                   0x142:0x142,              0x143:0x143,                       0x145:0x145,     
+          first_Independent_IDInsert_State:0x141,                   
+          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1):0x142,              
+          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2):0x143,                       
+          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4):0x145,     
           nx_Child_in(first_Independent_IDInsert_State,1):0x1411,
           nx_Child_in(first_Independent_IDInsert_State,2):0x14111 ,   
           nx_Child_in(first_Independent_IDInsert_State,3):0x141111 ,
-          0x1451:0x1451,
+          nx_Child_in(nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4),1):0x1451,
           nx_Child_in(initial_State,3):0x1111,                                
           ##nx_Child_Sibling_in(initial_State,4,2):0x11113, 
           nx_Child_in(initial_State,4):0x11111,                                
@@ -2220,7 +2218,8 @@ def GetMessage():
                 return  Arrow()._make_Message_Button_change_State(True, _textMessage, True,  currentState,initial_State, userRequest)
 
         #insert Yes of No for delete and prepare branches
-        elif  instance[userRequest['user_key']][StateString] == first_Independent_IDInsert_State+1  :
+        #elif  instance[userRequest['user_key']][StateString] == first_Independent_IDInsert_State+1  :
+        elif  instance[userRequest['user_key']][StateString] == nx_Child_Sibling(nx_Child_Sibling(initial_State,1,3),1,1)  :
             currentState = instance[userRequest['user_key']][StateString]              
             if  userRequest['content']  ==  StateButtonList[currentState][0] :
                 organization.pop( userRequest['user_key'] ,  None)
@@ -2252,7 +2251,7 @@ def GetMessage():
                 f.close()  
                 if  userRequest['content'] == p  :
                     _textMessage = userRequest['content']+ fromStateMessageList[currentState]+u'\n'+ toStateMessageList[nx_Child(currentState,1)]+u'\n\n'                
-                    _textMessage += u'---from memory-----------\n'
+                    ##_textMessage += u'---from memory-----------\n'
                     for key in organization.keys() :
                         _line = key  + u'  '+ str(organization[key][IDString]) + u'  '+ organization[key][NameString]  
                         if GradeString in organization[key].keys() :
@@ -2262,7 +2261,7 @@ def GetMessage():
                         if InputModeString in organization[key].keys() :
                             _line += u'  '+ str(organization[key][InputModeString ])
                         _line += u'\n'
-                        _textMessage += _line
+                        ##_textMessage += _line
                     Org2File(organization, org_rwfile_path)  # organization to organization file
                     _textMessage += u'---to storage-----------\n'
                     _textMessage += SummaryText().showOrgFile()
