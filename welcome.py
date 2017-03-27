@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.09'
+VersionString = u'1.10'
 
 
 _State0KeyList = [ 
@@ -1215,6 +1215,9 @@ emailToOfficeList = []
 emailForwardingList = []
 emailAdminList = []
 emailMulti_rofile_path = u'static/email2.txt'
+
+CaptainList = {}
+contact_rofile_path = u'static/contact_list.txt'
 def generateMultiEmailToList( _email2list, _emailfowardinglist, _emailadminlist) :
     if os.path.exists(emailMulti_rofile_path) :
         f = open( emailMulti_rofile_path, 'r')
@@ -1230,6 +1233,33 @@ def generateMultiEmailToList( _email2list, _emailfowardinglist, _emailadminlist)
         for i in range(1,len(tokens)) : 
             _emailadminlist.append(tokens[i])
         f.close()
+
+
+def generateContactList( _CaptainList,  _OfficeEmailList, _ForwardingEmailList, _AdminEmailList) :
+    if os.path.exists(contact_rofile_path) :
+        f = open( contact_rofile_path, 'r')
+        lines = f.readlines()
+        tokens = lines[0].split()
+        for i in range(1,len(tokens)) : 
+            _OfficeEmailList.append(tokens[i])
+
+        for j in range(1, 1+6) :
+            tokens = lines[j].split()
+            _CaptainList[j] = []
+            for i in range(1,len(tokens)) : 
+                #_CaptainList[j].append(tokens[i])
+                #written in windows hangul , so it is euc-kr
+                _CaptainList[j].append( unicode(  tokens[i] , 'euc-kr' ).encode('utf-8') )
+
+        tokens = lines[7].split()
+        for i in range(1,len(tokens)) : 
+            _ForwardingEmailList.append(tokens[i])
+        tokens = lines[8].split()
+        for i in range(1,len(tokens)) : 
+            _AdminEmailList.append(tokens[i])
+        f.close()
+
+
 
 gmailUserString = u'ID'
 gmailPasswordString = u'Password'
@@ -1377,9 +1407,10 @@ def isValidID( number ) :
     return False 
 
 class SummaryText :
-    def  __init__(self, mText = '' , mTextGroup = {} , mInstanceCount = 0 ) :
+    def  __init__(self, mText = '' , mTextGroup = {} , mTextGroup_separation = {} , mInstanceCount = 0 ) :
         self.mText = u'' 
         self.mTextGroup = {} 
+        self.mTextGroup_separation = {}
         self.mInstanceCount = 0
 
 
@@ -1462,7 +1493,59 @@ class SummaryText :
                 for _ins in _sumins_org_regrouping[_key0][_key1] :
                     self.mTextGroup[_key0].append( _key1+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n' )
                     self.mInstanceCount += 1
-        returelf.mTextGroup
+        return self.mTextGroup
+
+    def _genRegrouped5(self, _organization, _sum_instance, _with=False) :
+
+        self.mInstanceCount = 0
+        _sumins_org_regrouping = {}
+        for _userkey in _sum_instance.keys() :
+            if _userkey not in _organization :
+                continue
+            
+            for  _ins in  _sum_instance[_userkey]  : 
+                if  _organization[_userkey][GradeString]     not in  _sumins_org_regrouping :
+                    _sumins_org_regrouping[ _organization[_userkey][GradeString] ] = {}
+                if  _ins[LocationString]  not in  _sumins_org_regrouping[ _organization[_userkey][GradeString] ] :
+                    _sumins_org_regrouping[ _organization[_userkey][GradeString] ][ _ins[LocationString] ] = {}
+                if  _ins[SeatNumberString] not in _sumins_org_regrouping[ _organization[_userkey][GradeString] ][ _ins[LocationString] ] :
+                    _sumins_org_regrouping[ _organization[_userkey][GradeString] ][ _ins[LocationString] ][_ins[SeatNumberString]] = []
+
+                if  _organization[_userkey][GradeString]  not in self.mTextGroup :
+                    self.mTextGroup[ _organization[_userkey][GradeString] ] = {}
+                if  _ins[LocationString] not in self.mTextGroup[ _organization[_userkey][GradeString] ] :
+                    self.mTextGroup[ _organization[_userkey][GradeString] ][_ins[LocationString]] = u''
+
+                if  _organization[_userkey][GradeString]  not in self.mTextGroup_separation :
+                    self.mTextGroup_separation[ _organization[_userkey][GradeString] ] = {}
+                if  _ins[LocationString] not in self.mTextGroup_separation[ _organization[_userkey][GradeString] ] :
+                    self.mTextGroup_separation[ _organization[_userkey][GradeString] ][_ins[LocationString]] = []
+
+                _element = { 'user_key':_userkey }
+                _element[IDString]     = _organization[_userkey][IDString]
+                _element[NameString]   = _organization[_userkey][NameString]
+                if GradeString in _organization[_userkey].keys() :
+                    _element[GradeString ]   = _organization[_userkey][GradeString ]
+                _element[SymptomString] = _ins[SymptomString]
+                _element[PartString]   = _ins[PartString]
+                _sumins_org_regrouping[ _organization[_userkey][GradeString] ][_ins[LocationString]][_ins[SeatNumberString]].append(_element)                
+        for _key0 in _sumins_org_regrouping :
+            for _key1 in _sumins_org_regrouping[_key0] :
+                for _key2 in _sumins_org_regrouping[_key0][_key1] :
+                    for _ins in _sumins_org_regrouping[_key0][_key1][_key2] :
+                        self.mTextGroup[_key0][_key1] += _key2+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString]
+                        if _with == True  :
+                            self.mTextGroup[_key0][_key1] += u'\t  '+  str(_ins[IDString]) + u' for System Maintenance'  
+                        self.mTextGroup[_key0][_key1] += u'\n'
+
+                        # need to upgrade and verify
+                        self.mTextGroup_separation[_key0][_key1].append( _key2+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n' )
+
+                        self.mInstanceCount += 1
+        return self.mTextGroup
+
+    def getTextGroup_Separation(self) :
+        return self.mTextGroup_separation
 
     def getInstanceCount(self) :
         return self.mInstanceCount
@@ -1478,9 +1561,15 @@ class SummaryText :
 
 original_request_xlsx_file = u'static/original_request_office.xlsx'
 target_request_xlsx_file          = u'static/target.xlsx'
+target_request_xlsx_files =  [  u'static/target.xlsx', u'static/target1.xlsx' , u'static/target2.xlsx' , u'static/target3.xlsx' ,
+                                u'static/target4.xlsx' , u'static/target5.xlsx' , u'static/target6.xlsx'   ] 
+
 def mail( to, subject, body, attachlist=None):
     gmail_user = gmailInformation[gmailUserString]
     gmail_password = gmailInformation[gmailPasswordString]
+
+    if  len(to) == 0 :
+        to = emailAdminList
 
     if attachlist is None :    
         email_text = MIMEText( body , _charset="UTF-8")
@@ -1537,11 +1626,29 @@ def _calcTimer() :
 
 requester_name = u'강신청'
 requester_phone = u'010-0001-0005'
+
+_GradeNumToStr = {  1:u'예1',
+                    2:u'예2',
+                    3:u'본1',
+                    4:u'본2',
+                    5:u'본3',
+                    6:u'본4'
+}
+
+def GradeNumberToString(num) :
+    if type(num) != int :
+        return u'Unknown'
+    elif num not in _GradeNumToStr.keys() :
+        return u'Unknown'
+    else :
+        return _GradeNumToStr[num]        
+
 class MailBodyandAttachment :
-    def  __init__(self, mBody = u'' , mAttachmentList = [] , mInstanceCount = 0) :
+    def  __init__(self, mBody = u'' , mAttachmentList = [] , mInstanceCount = 0, mOfficeMailingList=[]) :
         self.mBody = u'' 
         self.mAttachmentList = []  
         self.mInstanceCount = 0
+        self.mOfficeMailingList = []
     def prepare(self) :
 
         s = SummaryText()
@@ -1577,12 +1684,58 @@ class MailBodyandAttachment :
         self.mAttachmentList.append( [ u'static/images/4eng_tables.png', u'B404_Tables.png'.encode('utf-8')] )
         return True
 
+    def prepare5(self, _with=False) :
+
+        s = SummaryText()
+        if _with == False :
+            _TextGroup = s._genRegrouped5( organization, sum_instance )
+        else :
+            _TextGroup = s._genRegrouped5( organization, sum_instance , True )          
+        self.mOfficeMailingList += emailToOfficeList  
+        if  len(_TextGroup.keys()) == 0 :
+            return False
+        self.mInstanceCount = s.getInstanceCount()
+
+        for _key0 in  _TextGroup.keys() :
+            shutil.copy( original_request_xlsx_file, target_request_xlsx_files[_key0])
+            excel_document = load_workbook(filename = target_request_xlsx_files[_key0])
+            source = excel_document.get_sheet_by_name('Sheet1')
+            source['B5'] = unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )
+            source['D5'] = CaptainList[_key0][1]    #captain name 
+            source['F5'] = CaptainList[_key0][2]    #captain phone number
+            self.mBody += u'[['+ GradeNumberToString(_key0)  +u']]'+u'\n'
+                                                      
+            for _key1 in  _TextGroup[_key0].keys() :
+                self.mBody += u'['+ _key1 +u']'+u'\n'
+                self.mBody += _TextGroup[_key0][_key1]          
+                              
+                target = excel_document.copy_worksheet( source )
+                target.title = _key1[2:]  + u'('+ GradeNumberToString(_key0) +u')'
+                target['B4'] = _key1[2:]
+                target['A7'] = _TextGroup[_key0][_key1]
+
+            excel_document.remove_sheet(source)
+            excel_document.save(filename = target_request_xlsx_files[_key0])
+
+            daily_filename = u'request(' + unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d") )+u')(Grade'+ str(_key0) +u').xlsx'.encode('utf-8')
+            self.mAttachmentList.append( [target_request_xlsx_files[_key0] , daily_filename ] )
+            self.mOfficeMailingList.append( CaptainList[_key0][0] )
+        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'B403_Seats.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4work_seats.png', u'B303_Seats.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/3com_seats.png',  u'B306_Seats.png'.encode('utf-8')] )
+        self.mAttachmentList.append( [ u'static/images/4eng_tables.png', u'B404_Tables.png'.encode('utf-8')] )
+        
+        return True
+
+
     def getBody(self) :
         return self.mBody
     def getAttachmentList(self) :
         return self.mAttachmentList
     def getInstanceCount(self) :
         return self.mInstanceCount  
+    def getOfficeMailingList(self) :
+        return self.mOfficeMailingList
 
 def Org2File( _organization, _file) :
     f = open( _file , 'w')
@@ -1602,7 +1755,8 @@ def Org2File( _organization, _file) :
 def periodic_mail_forwarding()  :   
     try :
         m = MailBodyandAttachment()
-        m.prepare()
+        m.prepare5()
+
     except :
         mail( emailAdminList, u'periodic_mail_case1', u'check'.encode('utf-8'))
     try :
@@ -1610,10 +1764,26 @@ def periodic_mail_forwarding()  :
         #subject = u'실습실 수리 신청입니다('+unicode((datetime.now()+timedelta(hours=time_difference)-timedelta(days=1)).strftime("%Y-%m-%d"))+u')' 
         subject = u'실습실 수리 신청입니다(총 '+str(m.getInstanceCount())+u'건)('
         subject += unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
-        #mail(to, subject , body.encode('utf-8') )        
-        mail( emailToOfficeList, subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
-    except :
-        mail( emailAdminList, u'periodic_mail_case2', u'check'.encode('utf-8'))
+        mail(  m.getOfficeMailingList(), subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
+
+    except Exception as ex :
+#        mail( emailAdminList, u'periodic_mail_case2', u'check'.encode('utf-8'))
+        mail( emailAdminList, u'periodic_mail_case2', str(ex).encode('utf-8'))
+
+    try :
+        n = MailBodyandAttachment()
+        n.prepare5(True)
+        subject = u'Maintenance실습실 수리 신청입니다(총 '+str(m.getInstanceCount())+u'건)('
+        subject += unicode( (datetime.now()+timedelta(hours=time_difference) ).strftime("%Y-%m-%d") )+u')' 
+        mail(  emailAdminList, subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
+
+    except Exception as ex :
+#        mail( emailAdminList, u'periodic_mail_case2', u'check'.encode('utf-8'))
+        mail( emailAdminList, u'periodic_mail_case2.5', str(ex).encode('utf-8'))
+
+
+
+
     try :
         sum_instance.clear()  #clear sum_instance 
         Org2File(organization, org_rwfile_path)  # organization to organization file
@@ -1641,7 +1811,8 @@ def hello_world() :
 
 generate4EngStatesInformation()
 generateOrganization(organization)
-generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
+#generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
+generateContactList( CaptainList, emailToOfficeList, emailForwardingList, emailAdminList)
 generateEmailFrom(gmailInformation)
 hello_world()
 
@@ -2261,8 +2432,7 @@ def GetMessage():
                     _textMessage += SummaryText().showOrgFile()
 
                     m = MailBodyandAttachment()
-                    m.prepare()
-
+                    m.prepare5(True)
                     _textMessage += m.getBody() + u'\n'
                     _textMessage += u'[[practice_sum_instance]]' + u'\n'
                     for key0 in practice_sum_instance :
@@ -2271,8 +2441,8 @@ def GetMessage():
 
                     subject = u'전체고장 확인(총 '+str(m.getInstanceCount())+u'건)('    
                     subject += unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
-
-                    mail(emailAdminList, subject , _textMessage.encode('utf-8') ,  m.getAttachmentList() )
+                    ####mail(emailAdminList, subject , _textMessage.encode('utf-8') ,  m.getAttachmentList() )
+                    mail( emailAdminList , subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
 
                     return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
                 else :
@@ -2300,8 +2470,8 @@ def GetMessage():
         textMessage = {"message":textContent}
         return jsonify(textMessage)
     except Exception as ex :
-                return  Arrow()._make_Message_Button_change_State(True,  traceback.format_exc()  , True,  currentState,initial_State, userRequest)
-#                return  Arrow()._make_Message_Button_change_State(True,  str(ex) , True,  currentState,initial_State, userRequest)
+        return  Arrow()._make_Message_Button_change_State(True,  traceback.format_exc()  , True,  currentState,initial_State, userRequest)
+ #               return  Arrow()._make_Message_Button_change_State(True,  str(ex) , True,  currentState,initial_State, userRequest)
 
 
 @app.errorhandler(404)
