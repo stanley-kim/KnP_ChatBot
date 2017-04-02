@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.10'
+VersionString = u'1.11'
 
 
 _State0KeyList = [ 
@@ -318,13 +318,10 @@ _ComnetworkSymptomKeyList = [
       u'3:증상 직접 입력', 
       u'이전 메뉴'       
 ]
-
 _ComnetworkSymptomMultiChoiceList = [
       u'1:오프라인으로 나옴' ,
       u'2:IP 충돌이라고 나옴' , 
     ]   
-
-
 _ComnetworkSymptomJoinString = u'\n'.join(_ComnetworkSymptomMultiChoiceList)
 
 _CombodySymptomKeyList = [
@@ -568,8 +565,6 @@ first_3work_State      = 0x111113
 first_3handpiece_State = 0x111114
 first_4eng_State       = 0x111112
 first_Independent_IDInsert_State = 0x141
-
-
 
 StateMultiChoiceList = {
                 nx_Child_in(first_4work_State,3): _LightSymptomMultiChoiceList  ,            nx_Child_Sibling_in(first_4work_State,3,1): _MonitorSymptomMultiChoiceList ,     
@@ -2428,8 +2423,11 @@ def GetMessage():
                         _line += u'\n'
                         ##_textMessage += _line
                     Org2File(organization, org_rwfile_path)  # organization to organization file
-                    _textMessage += u'---to storage-----------\n'
-                    _textMessage += SummaryText().showOrgFile()
+                    _textMessage += u'----------------------\n'
+                    _textMessage += u'copy organization\n'
+                    _textMessage += u'from memory to storage\n'
+                    _textMessage += u'----------------------\n'
+                    #_textMessage += SummaryText().showOrgFile()
 
                     m = MailBodyandAttachment()
                     m.prepare5(True)
@@ -2442,7 +2440,7 @@ def GetMessage():
                     subject = u'전체고장 확인(총 '+str(m.getInstanceCount())+u'건)('    
                     subject += unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
                     ####mail(emailAdminList, subject , _textMessage.encode('utf-8') ,  m.getAttachmentList() )
-                    mail( emailAdminList , subject , m.getBody().encode('utf-8') , m.getAttachmentList() )
+                    mail( emailAdminList , subject , ( unicode(request.url_root)+u'\n'+SummaryText().showOrgFile()+u'\n'+m.getBody()).encode('utf-8') , m.getAttachmentList() )
 
                     return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
                 else :
