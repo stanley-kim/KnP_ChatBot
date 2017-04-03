@@ -13,6 +13,7 @@ echo FAILED notfound
 cf ssh wskars -c "cat app/static/organization.txt" > static/organization_america.txt
 copy static\organization_america.txt static\organization.txt /Y
 copy static\contact_list_america.txt static\contact_list.txt /Y
+copy static\document_america.txt     static\document.txt /Y
 goto dopush
 :dopush
 del res_org_america.txt

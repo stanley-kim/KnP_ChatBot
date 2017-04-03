@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.11'
+VersionString = u'1.12'
 
 
 _State0KeyList = [ 
@@ -603,13 +603,13 @@ StateButtonList = { initial_State: _State0KeyList,
 }
 
 StatePhotoList = {  
-                    first_4work_State:   {"url": u'static/images/4work_seats.png' , "width": 548, "height": 482 } ,
+                    first_4work_State:   { "url": u'static/images/4work_seats.png' , "width": 493, "height": 682 } ,
                     nx_Child_in(first_4work_State,1):  {"url": u'static/images/4work_oneseat.png' ,"width": 200, "height": 283 } ,
-                    first_3work_State:  {"url": u'static/images/4work_seats.png'  ,"width": 548 ,"height": 482 }, 
+                    first_3work_State:   { "url": u'static/images/4work_seats.png'  ,"width": 493 ,"height": 682 }, 
                     nx_Child_in(first_3work_State,1): {"url": u'static/images/3work_oneseat.png' ,"width": 200, "height": 283 } ,
                     first_3handpiece_State:  {"url": u'static/images/3work_case.png' ,"width": 230,"height": 218}, 
                     nx_Child_in(first_3handpiece_State,1): {"url": u'static/images/3work_caseopen.png' ,"width": 200,"height": 283 } ,
-                    first_3com_State:   {"url": u'static/images/3com_seats.png' ,   "width": 662,"height": 465 }, 
+                    first_3com_State:   {"url": u'static/images/3com_seats.png' ,   "width": 542,"height": 611 }, 
                     nx_Child_in(first_3com_State,1):  {"url": u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 #                    141:  {"url": request.url_root+u'static/images/3com_oneseat.png' ,"width": 363,"height": 616 }
 }
@@ -840,7 +840,7 @@ def generate4EngStatesInformation() :
         _current_State = nx_Child_in(_current_State,1)
         state[ nx_Child_in(_current_State,1) ] = nx_Child_in(_current_State,1)              #Y or Y+ or N?
 
-    StatePhotoList[first_4eng_State] = {"url": u'static/images/4eng_tables.png' , "width": 503, "height": 473 }
+    StatePhotoList[first_4eng_State] = {"url": u'static/images/4eng_tables.png' , "width": 626, "height": 660 }
     for i in range(len_tables)  :
         StatePhotoList[nx_Child_in(first_4eng_State,1)+i] = {"url": u'static/images/table'+str(i+1)+u'.jpg' , "width": 720, "height": 405 }
     StatePhotoList[nx_Child_in(first_4eng_State,1)+0]["height"] = 387

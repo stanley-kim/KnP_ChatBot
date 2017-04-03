@@ -13,6 +13,7 @@ echo FAILED notfound
 cf ssh wskSidney -c "cat app/static/organization.txt" > static/organization_sidney.txt
 copy static\organization_sidney.txt static\organization.txt /Y
 copy static\contact_list_sidney.txt static\contact_list.txt /Y
+copy static\document_sidney.txt     static\document.txt /Y
 goto dopush
 :dopush
 del res_org_sidney.txt
