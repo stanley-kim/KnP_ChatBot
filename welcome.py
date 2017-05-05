@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.13'
+VersionString = u'1.14'
 
 
 _State0KeyList = [ 
@@ -2398,7 +2398,8 @@ def GetMessage():
                     lastKeyIndex = len(StateButtonList[ currentState ])-1
                     #direct describe case
                     if  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex-1] :
-                        return Arrow().make_Message_Button_change_State(currentState,nx_Child(  determineSubGraph(currentState) ,4), userRequest )
+                        return Arrow().make_Message_Button_change_State(currentState,  determineSubGraph(currentState ,4), userRequest )
+                        #return Arrow().make_Message_Button_change_State(currentState,nx_Child(  determineSubGraph(currentState) ,4), userRequest )
                     elif  userRequest['content']  ==  StateButtonList[ currentState ][lastKeyIndex] :
                         return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,2) , userRequest, request.url_root)   
                     else:
@@ -2406,11 +2407,13 @@ def GetMessage():
                         # ID info in temp_organization 
                         if userRequest['user_key'] not in organization:
                             _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  temp_organization , instance , userRequest['user_key'])                
-                            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState) ,5) , userRequest)             
+                            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, determineSubGraph(currentState ,5) , userRequest)             
+                            #return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState) ,5) , userRequest)             
                         #already ID info  in organization  
                         else : 
                             _textMessage = SummaryText()._generate(LastYesNoString+u'\n' ,  organization , instance , userRequest['user_key'])                
-                            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState) ,5) , userRequest)                     
+                            return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, determineSubGraph(currentState ,5) , userRequest)                     
+                            #return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, nx_Child(  determineSubGraph(currentState) ,5) , userRequest)                     
                 else :
                     _textMessage = userRequest['content']+SelectString+u'\n'
                     instance[userRequest['user_key']] = { StateString : initial_State }            
