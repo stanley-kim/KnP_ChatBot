@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.12'
+VersionString = u'1.13'
 
 
 _State0KeyList = [ 
@@ -54,6 +54,12 @@ _State1KeyList = [
       u'이전 메뉴'
     ]   
 
+_State_ItemListCheckTop_List = [
+      u'1.초기 메뉴로 복귀' ,
+      u'2.일부 삭제',
+      u'3.전체 삭제',
+      u'이전 메뉴'     
+    ]   
   
 _State4KeyList = [
       u'1.학번(혹은 사번) 및 이름 입력/수정',
@@ -84,7 +90,6 @@ _InputModeList = [
 
 _YesorNoKeyList = [  u'1.Yes', u'2.No' , u'이전 메뉴'  ]
 
-#_YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴'  ]
 _YesorNoKeyListv2 = [  u'1.Yes', u'2.Yes(+파트 추가 입력)', u'3.No' , u'이전 메뉴' , u'4.Yes(연습용)', u'5.Yes(+파트 추가 입력)(연습용)', u'6.No(연습용)' ]
 
 
@@ -579,9 +584,12 @@ StateMultiChoiceList = {
 }
 
 StateButtonList = { initial_State: _State0KeyList, 
+                    nx_Child_Sibling_in(initial_State,1,1): _State_ItemListCheckTop_List ,                                            
                   nx_Child_Sibling_in(initial_State,1,3): _State4KeyList ,
+                  nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,1),1,1) : _YesorNoKeyList ,
                   nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1) : _YesorNoKeyList ,   
                   nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2) : _InputModeList, 
+                  nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),2): _YesorNoKeyList  ,
                  nx_Child_in(first_Independent_IDInsert_State,2): _GradeKeyList ,                 
                  nx_Child_in(first_Independent_IDInsert_State,3): _YesorNoKeyList  ,   
                  nx_Child_in(initial_State,3): _GradeKeyList ,  
@@ -647,6 +655,8 @@ DirectInsertDeviceString = u'고장난 기계와 증상을 한꺼번에 입력�
 InsertValidNumberString = u'범위 내의 숫자를 입력해주세요'
 InsertNumberString = u'숫자를 입력해주세요'
 InsertCaseNumberString = u'Case의 번호를 입력해주세요\n0:이전 메뉴'
+InsertItemNumberString = u'삭제할 Item의 번호를 입력해주세요\n\n예시)\n2:2번 선택\n1 3: 1과 3번 선택\n0:이전 메뉴'
+
 
 AskSeatHandpieceString = u'실습실 자리 문제인가요? 핸드피스 문제인가요?'
 AskDeletionString = u'삭제하시겠습니까?'
@@ -656,8 +666,11 @@ AskInputModeString = u'어떤 입력 방식으로  변경하시겠습니까?'
 
 fromStateMessageList = {  initial_State:SelectString+u'\n' ,
                           nx_Child_in(initial_State,1):SelectString+u'\n' ,
+                          nx_Child_Sibling_in(initial_State,1,1):SelectString+u'\n', 
                           first_Independent_IDInsert_State:SelectString+u'\n' ,        
-                          nx_Child_Sibling_in(initial_State,1,3):SelectString+u'\n' ,          
+                          nx_Child_Sibling_in(initial_State,1,3):SelectString+u'\n' ,
+                          nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),1):SelectString+ u'\n',
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,1),1,1):SelectString+ u'\n',
                           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1):SelectString+u'\n' ,            
                           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2):SelectString+u'\n' ,         
                           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4):SelectString+u'\n' , 
@@ -666,6 +679,7 @@ fromStateMessageList = {  initial_State:SelectString+u'\n' ,
                           nx_Child_in(first_Independent_IDInsert_State,1):SelectString+ u'\n' ,                                           
                           nx_Child_in(initial_State,3):SelectString+u'\n' ,
                           nx_Child_in(initial_State,4):SelectString+u'\n' ,
+                          nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),2):SelectString+ u'\n',
                           nx_Child_in(first_Independent_IDInsert_State,2):SelectString+ u'\n',
                           nx_Child_in(first_Independent_IDInsert_State,3):SelectString+ u'\n',
                           first_4work_State:InsertedString+u'\n' ,    first_3com_State:SelectString+u'\n' ,          
@@ -692,14 +706,18 @@ fromStateMessageList = {  initial_State:SelectString+u'\n' ,
 toStateMessageList = {    initial_State:u'',
                           nx_Child_in(initial_State,1):InsertIDString,
                           first_Independent_IDInsert_State:InsertIDString,
+                          nx_Child_Sibling_in(initial_State,1,1):u'', 
                           nx_Child_Sibling_in(initial_State,1,3):u'',
-                          nx_Child_in(initial_State,2):InsertNameString,                          
+                          nx_Child_in(initial_State,2):InsertNameString,
+                          nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),1):InsertItemNumberString,
+                          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,1),1,1):AskDeletionString,                          
+                          nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),2):AskDeletionString,
                           nx_Child_in(first_Independent_IDInsert_State,1):InsertNameString,
                           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1):AskDeletionString,                                 
                           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2): AskInputModeString,               
                           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4):AskPasswordString,
                           nx_Child_in(nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4),1):AskMovementString,
-                          nx_Child_in(initial_State,3):InsertGradeString ,
+                          nx_Child_in(initial_State,3):InsertGradeString,
                           nx_Child_in(first_Independent_IDInsert_State,2):InsertGradeString,
                           #nx_Child_Sibling_in(initial_State,4,2):AskSeatHandpieceString,                                                    
                           nx_Child_in(initial_State,4):AskLocationString,                                                 
@@ -778,13 +796,17 @@ pop_pushedStateList = {
 
 
 state = { initial_State:0x1 , 
-          nx_Child_in(initial_State,1):0x11,                                    
+          nx_Child_in(initial_State,1):0x11,
+          nx_Child_Sibling_in(initial_State,1,1):0x12,                                            
           nx_Child_Sibling_in(initial_State,1,3):0x14 , 
           nx_Child_in(initial_State,2):0x111,
+          nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),1):0x121,      
+          nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,1),1,1):0x122, 
           first_Independent_IDInsert_State:0x141,                   
           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,1):0x142,              
           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,2):0x143,                       
           nx_Child_Sibling_in(nx_Child_Sibling_in(initial_State,1,3),1,4):0x145,     
+          nx_Child_in(nx_Child_Sibling_in(initial_State,1,1),2):0x1211,
           nx_Child_in(first_Independent_IDInsert_State,1):0x1411,
           nx_Child_in(first_Independent_IDInsert_State,2):0x14111 ,   
           nx_Child_in(first_Independent_IDInsert_State,3):0x141111 ,
@@ -1310,9 +1332,14 @@ class  Arrow :
         #_textMessage = _userRequest['content']+ fromStateMessageList[_fromState]  +   toStateMessageList[_toState]
         _textMessage = _userRequest['content']
         if _fromState in  fromStateMessageList :
-            _textMessage += fromStateMessageList[_fromState]  
+            _textMessage += fromStateMessageList[_fromState]
+        else :
+            _textMessage += u'toState('+format(  _fromState , '#04x' )+u')' 
+
         if _toState in  toStateMessageList :
             _textMessage += toStateMessageList[_toState]
+        else :
+            _textMessage += u'toState('+format(  _toState , '#04x' )+u')' 
 
         _ButtonFlag = True
         _PhotoFlag  = True
@@ -1423,12 +1450,40 @@ class SummaryText :
             self.mText += u'part       :' + _instance[ _UserRequestKey ][PartString]+u'\n'
             self.mText += u'symptom    :' + _instance[ _UserRequestKey ][SymptomString]
         else : 
-            if _OnlyPart == False :
-                self.mText += u'location   :' + _instance[ _UserRequestKey ][_key1][LocationString]+u'\n'
-                self.mText += u'seat number:' + _instance[ _UserRequestKey ][_key1][SeatNumberString]+u'\n'
+#            if _OnlyPart == False :
+            self.mText += u'location   :' + _instance[ _UserRequestKey ][_key1][LocationString]+u'\n'
+            self.mText += u'seat number:' + _instance[ _UserRequestKey ][_key1][SeatNumberString]+u'\n'
             self.mText += u'part       :' + _instance[ _UserRequestKey ][_key1][PartString]+u'\n'
             self.mText += u'symptom    :' + _instance[ _UserRequestKey ][_key1][SymptomString]+u'\n'
         return self.mText
+
+
+    def  generateSumofAll(self, _organization,_instance, _UserRequestKey ) :
+
+        self.mText += (datetime.now() + timedelta(hours=time_difference) )  .strftime("%Y-%m-%d %H:%M:%S") + u'\n'
+        self.mText += u'최종 접수 예정:' +u'\n'
+
+        if _UserRequestKey in _instance and  _UserRequestKey in _organization  :
+
+            for i in range( len(_instance[_UserRequestKey]) ):
+                if i == 0 :
+                    self.mText += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , _organization, _instance, _UserRequestKey, i)
+                else :
+                    self.mText += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , _organization, _instance, _UserRequestKey, i, True)
+
+            #subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
+            #mail(emailAdminList , subject , _textMessage.encode('utf-8'))
+
+        self.mText += u'\n'
+        self.mText += u'(연습용)최종 접수 예정:' +u'\n'
+        if _UserRequestKey in practice_sum_instance and _UserRequestKey in _organization  :
+            for i in range( len(practice_sum_instance[_UserRequestKey]) ):
+                if i == 0 :
+                    self.mText += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , _organization, practice_sum_instance, _UserRequestKey, i)
+                else  :
+                    self.mText += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , _organization, practice_sum_instance, _UserRequestKey, i, True)
+        return self.mText
+
 
     def _genRegrouped2(self, _organization, _sum_instance) :
 
@@ -1776,9 +1831,6 @@ def periodic_mail_forwarding()  :
 #        mail( emailAdminList, u'periodic_mail_case2', u'check'.encode('utf-8'))
         mail( emailAdminList, u'periodic_mail_case2.5', str(ex).encode('utf-8'))
 
-
-
-
     try :
         sum_instance.clear()  #clear sum_instance 
         Org2File(organization, org_rwfile_path)  # organization to organization file
@@ -1810,6 +1862,8 @@ generateOrganization(organization)
 generateContactList( CaptainList, emailToOfficeList, emailForwardingList, emailAdminList)
 generateEmailFrom(gmailInformation)
 hello_world()
+
+real_number_list = {}    ## numbers will be sorted by ascending order 
 
 PrevTimeString = u'prev'
 MessageTime = {}
@@ -1881,31 +1935,10 @@ def GetMessage():
                     ##return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,3) ,userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][1] :
                 _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
-                _textMessage += (datetime.now() + timedelta(hours=time_difference) )  .strftime("%Y-%m-%d %H:%M:%S") + u'\n'
+                _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
 
-                _textMessage += u'최종 접수 예정:' +u'\n'
-
-                _UserRequestKey = userRequest['user_key'] 
-                if _UserRequestKey in sum_instance and  _UserRequestKey in organization  :
-
-                    for i in range( len(sum_instance[_UserRequestKey]) ):
-                        _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
-                    #subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
-                    #mail(emailAdminList , subject , _textMessage.encode('utf-8'))
-
-                _textMessage += u'\n'
-                _textMessage += u'(연습용)최종 접수 예정:' +u'\n'
-                if _UserRequestKey in practice_sum_instance and _UserRequestKey in organization  :
-                    for i in range( len(practice_sum_instance[_UserRequestKey]) ):
-                        _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, practice_sum_instance, _UserRequestKey, i)
-
-                # to check one users sum_instance and practice_sum_instance 
-                #if  _UserRequestKey in organization and ( _UserRequestKey in practice_sum_instance or  _UserRequestKey in sum_instance ) :
-                #    subject = u'개인별고장 확인'+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
-                #    mail(emailAdminList , subject , _textMessage.encode('utf-8'))
-
-                #_textMessage += u'최종 접수 완료:' +u'\n'
-                return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
+                #return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, nx_Child_Sibling(currentState,1,1)   , userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][2] :             
                 _textMessage = userRequest['content']+SelectString
                 _mButton = { "label": "link를 click해주세요", "url" : "https://www.youtube.com/watch?v=fE5P3YLZcr8" }
@@ -1972,12 +2005,128 @@ def GetMessage():
                 _textMessage += u'Name :'+ temp_organization[userRequest['user_key']][NameString]+u'\n'
                 _textMessage += u'Grade :'+ str(temp_organization[userRequest['user_key']][GradeString ] )
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
-                ##return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  nx_Child( currentState ,1) , userRequest)             
             else :
                 return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
-                ##return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest ) 
 
-#        elif   instance[userRequest['user_key']][StateString]  == nx_Child( first_Independent_IDInsert_State, 2 ) : #14111
+
+        #process decision for Go-to-Initial, Delete some, Delte All, Goto  Prev
+        elif   instance[userRequest['user_key']][StateString]  \
+            in [  nx_Child_Sibling(initial_State,1,1) ]  :               #12
+            currentState = instance[userRequest['user_key']][StateString] 
+            _UserRequestKey = userRequest['user_key']
+            if     userRequest['content']  in [   StateButtonList[ currentState ][1] ,  StateButtonList[ currentState ][2] ] :  #  Delete some or all
+                if   _UserRequestKey not in organization  or \
+                     _UserRequestKey not in sum_instance.keys()  or  \
+                     len(sum_instance[_UserRequestKey]) == 0 :
+                    _textMessage = userRequest['content']+SelectString+u'\n'
+                    _textMessage += u'삭제할 item이 없습니다'+u'\n'
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState,  prev_Parent(currentState,1) , userRequest)
+                elif   userRequest['content'] ==  StateButtonList[ currentState ][1]  :     #delete some
+                    return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest)
+                elif   userRequest['content'] ==  StateButtonList[ currentState ][2]  :     #delete all
+                    return Arrow().make_Message_Button_change_State(currentState, nx_Child_Sibling(currentState,1,1) , userRequest)
+                else  :  #which case , defensive else                                    
+                    return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,1) , userRequest)
+
+            elif  userRequest['content']  in  [    StateButtonList[currentState][0] ,  StateButtonList[currentState][3] ] :
+                return Arrow().make_Message_Button_change_State(currentState,  prev_Parent(currentState,1) , userRequest)
+
+        #process item numbers to delete
+        elif   instance[userRequest['user_key']][StateString]  \
+            in [  nx_Child(nx_Child_Sibling(initial_State,1,1),1) ]  :               #121
+            currentState = instance[userRequest['user_key']][StateString]
+            _UserRequestKey = userRequest['user_key'] 
+
+            number_list = [] 
+            real_number_list[_UserRequestKey] = []  #initialize real_number_list per userkey
+            if  _UserRequestKey in sum_instance.keys()  and  len(sum_instance[_UserRequestKey]) != 0 :
+                preserve_real_number_list= list ( range( len(sum_instance[_UserRequestKey]) )   )  
+            tokens = re.split(r'(\s*\,\s*|\s+)', userRequest['content'] )
+            if  len(tokens) == 1 and \
+                tokens[0].strip().isdigit() and \
+                int ( tokens[0].strip() ) == 0 :
+
+                    _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                    _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, prev_Parent(currentState,1) , userRequest)                
+                    #return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)              
+            for token  in  tokens  :
+                if token.strip().isdigit() :   # if token is digit
+                    if int ( token.strip() ) not in number_list :   # and token is not in number_list
+                        number_list.append(  int ( token.strip() )  )    #append token
+                    else :                                          # token is already in number_list
+                        continue                                    # skip it
+                elif bool (   re.match( r'\s*\,\s*|\s+' , token ) ) :   # if token is   whitespace or ,
+                    continue                                            # skip it
+                else  :                                                 # if token is char 
+                    _textMessage = token+SelectString+u'\n'+ InsertNumberString               
+                    return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, currentState , userRequest)   # notify it and return back
+            if  len ( number_list ) > 1 :
+                number_list.sort()  #sort numbers
+
+            if  len ( number_list ) > 0 and number_list[0] == 0  :
+                _textMessage = str(number_list[0]) +SelectString+u'\n'+ InsertValidNumberString               
+                return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, currentState , userRequest)   # notify it and return back
+            if  len ( number_list ) > 0 and  _UserRequestKey  in organization and  _UserRequestKey in sum_instance and number_list[-1] >  len(sum_instance[_UserRequestKey]) :
+                _textMessage = str(number_list[-1])+SelectString+u'\n'+ InsertValidNumberString               
+                return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, currentState , userRequest)   # notify it and return back
+
+            for number in number_list :
+                real_number_list[_UserRequestKey].append( number-1 )
+            for number in real_number_list[_UserRequestKey] :
+                if  number in preserve_real_number_list  :
+                    preserve_real_number_list.remove(number)
+            _textMessage = userRequest['content']+SelectString+u'\n'
+            _textMessage += AskDeletionString +u'\n'
+            _textMessage += u'\n'
+            _textMessage += u'삭제할 item들:' +u'\n'
+            for i in real_number_list[_UserRequestKey] :  # for this print, real_number_list must be orderd by ascending order
+                _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
+            _textMessage += u'\n'
+            _textMessage += u'남길 item들:' +u'\n'
+            for i in preserve_real_number_list  :
+                _textMessage += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , organization, sum_instance, _UserRequestKey, i)
+            return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, nx_Child(currentState,1) , userRequest)                
+
+        # decide to delete (Y/N/Prev)
+        elif   instance[userRequest['user_key']][StateString]  \
+            in [  nx_Child(nx_Child_Sibling(initial_State,1,1),2) ]  :               #1211
+            currentState = instance[userRequest['user_key']][StateString]   
+            _UserRequestKey = userRequest['user_key'] 
+            if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
+                _revorder_real_number_list = sorted( real_number_list[_UserRequestKey], reverse=True  )
+                for number in  _revorder_real_number_list   :
+                    if  _UserRequestKey in sum_instance.keys()  and  number in range( len(sum_instance[_UserRequestKey])  )  : 
+                        del sum_instance[_UserRequestKey][number] 
+                if   _UserRequestKey in sum_instance.keys() and len(sum_instance[_UserRequestKey])   == 0  :
+                    sum_instance.pop( _UserRequestKey )
+
+                _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, prev_Parent(currentState,2) , userRequest)          
+
+            elif userRequest['content']  ==  StateButtonList[ currentState ][2] :
+                return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)
+
+            else : 
+                return  Arrow().make_Message_Button_change_State(currentState,initial_State, userRequest)
+
+        # decide to delete All(Y/N/Prev)
+        elif   instance[userRequest['user_key']][StateString]  \
+            in [  nx_Child_Sibling(nx_Child_Sibling(initial_State,1,1),1,1) ]  :               #122
+            currentState = instance[userRequest['user_key']][StateString]   
+            _UserRequestKey = userRequest['user_key'] 
+            if  userRequest['content'] == StateButtonList[ currentState ][0]   :
+                if   _UserRequestKey  in organization  and  _UserRequestKey in sum_instance.keys()   :
+                    sum_instance.pop( _UserRequestKey )
+                return  Arrow().make_Message_Button_change_State(currentState,initial_State, userRequest)
+            elif  userRequest['content'] == StateButtonList[ currentState ][1]   :
+                return  Arrow().make_Message_Button_change_State(currentState,initial_State, userRequest)
+            else :
+                _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, prev_Parent(currentState,1) , userRequest)                
+
         elif   instance[userRequest['user_key']][StateString]  == nx_Child( first_Independent_IDInsert_State,3) : #14111
             currentState = instance[userRequest['user_key']][StateString]   
             if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
@@ -1994,6 +2143,7 @@ def GetMessage():
                         organization[userRequest['user_key']][InputModeString] = temp_organization[userRequest['user_key']][InputModeString]   
 
                     temp_organization.pop( userRequest['user_key'] ,  None)
+                    
                 _textMessage = userRequest['content']+  u'\n' +SubmitString 
                 instance[userRequest['user_key']] = { StateString : initial_State }            
                 return  Arrow()._make_Message_Button_change_State(True, _textMessage, True, currentState, initial_State, userRequest)
