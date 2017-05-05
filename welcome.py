@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.14'
+VersionString = u'1.15'
 
 
 _State0KeyList = [ 
@@ -55,9 +55,9 @@ _State1KeyList = [
     ]   
 
 _State_ItemListCheckTop_List = [
-      u'1.초기 메뉴로 복귀' ,
-      u'2.일부 삭제',
-      u'3.전체 삭제',
+      u'이전 메뉴' ,
+      u'1.일부 삭제',
+      u'2.전체 삭제',
       u'이전 메뉴'     
     ]   
   
@@ -655,7 +655,7 @@ DirectInsertDeviceString = u'고장난 기계와 증상을 한꺼번에 입력�
 InsertValidNumberString = u'범위 내의 숫자를 입력해주세요'
 InsertNumberString = u'숫자를 입력해주세요'
 InsertCaseNumberString = u'Case의 번호를 입력해주세요\n0:이전 메뉴'
-InsertItemNumberString = u'삭제할 Item의 번호를 입력해주세요\n\n예시)\n2:2번 선택\n1 3: 1과 3번 선택\n0:이전 메뉴'
+InsertItemNumberString = u'삭제할 Item의 번호를 모두 입력해주세요\n\n예시)\n2: 2번 입력\n1 3: 1과 3번 입력\n0: 이전 메뉴'
 
 
 AskSeatHandpieceString = u'실습실 자리 문제인가요? 핸드피스 문제인가요?'
@@ -1856,6 +1856,7 @@ def hello_world() :
     except :
         mail( emailAdminList, u'hello_world_case0', u'check'.encode('utf-8'))
 
+
 generate4EngStatesInformation()
 generateOrganization(organization)
 #generateMultiEmailToList(emailToOfficeList, emailForwardingList, emailAdminList)
@@ -2592,8 +2593,9 @@ def GetMessage():
 
                     subject = u'전체고장 확인(총 '+str(m.getInstanceCount())+u'건)('    
                     subject += unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d")  )+u')'
-                    ####mail(emailAdminList, subject , _textMessage.encode('utf-8') ,  m.getAttachmentList() )
-                    mail( emailAdminList , subject , ( unicode(request.url_root)+u'\n'+SummaryText().showOrgFile()+u'\n'+m.getBody()).encode('utf-8') , m.getAttachmentList() )
+
+                    parameter_list = [ emailAdminList , subject , ( unicode(request.url_root)+u'\n'+SummaryText().showOrgFile()+u'\n'+m.getBody()).encode('utf-8') , m.getAttachmentList()  ] 
+                    Timer(1.0, mail, parameter_list).start()
 
                     return Arrow()._make_Message_Button_change_State(True, _textMessage,  False, currentState, nx_Child(currentState,1) , userRequest)     
                 else :
