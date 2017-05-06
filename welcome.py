@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.15'
+VersionString = u'1.16'
 
 
 _State0KeyList = [ 
@@ -1474,9 +1474,9 @@ class SummaryText :
             #subject = u'개인별고장 확인('+unicode ( (datetime.now() + timedelta(hours=time_difference)  ).strftime("%Y-%m-%d"))+u')'
             #mail(emailAdminList , subject , _textMessage.encode('utf-8'))
 
-        self.mText += u'\n'
-        self.mText += u'(연습용)최종 접수 예정:' +u'\n'
         if _UserRequestKey in practice_sum_instance and _UserRequestKey in _organization  :
+            self.mText += u'\n'
+            self.mText += u'(연습용)최종 접수 예정:' +u'\n'
             for i in range( len(practice_sum_instance[_UserRequestKey]) ):
                 if i == 0 :
                     self.mText += SummaryText()._generate(u'---------' + str(i+1) +  u'------------\n' , _organization, practice_sum_instance, _UserRequestKey, i)
@@ -1864,7 +1864,7 @@ generateContactList( CaptainList, emailToOfficeList, emailForwardingList, emailA
 generateEmailFrom(gmailInformation)
 hello_world()
 
-real_number_list = {}    ## numbers will be sorted by ascending order 
+real_number_list = {}    ## numbers(index) to delete.  numbers will be sorted by ascending order 
 
 PrevTimeString = u'prev'
 MessageTime = {}
