@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.16'
+VersionString = u'1.18'
 
 
 _State0KeyList = [ 
@@ -2132,12 +2132,16 @@ def GetMessage():
             currentState = instance[userRequest['user_key']][StateString]   
             if  userRequest['content']  ==  StateButtonList[ currentState ][0] :
                 if  userRequest['user_key'] in temp_organization :
+
+                    #if it is first ID/Nmae/Grade Inserttion, make own organization room( organization[userRequest['user_key']] )
                     if  userRequest['user_key'] not in  organization :
                         organization[userRequest['user_key']] = {}    
-                    organization[userRequest['user_key']][IDString] = temp_organization[userRequest['user_key']][IDString]    
+                    #update ID/Name/GradeString, whether org[ID/Name/GradeString] is already saved or not. that is becasue this can be whether first insertion or modification    
+                    organization[userRequest['user_key']][IDString] = temp_organization[userRequest['user_key']][IDString]     
                     organization[userRequest['user_key']][NameString] = temp_organization[userRequest['user_key']][NameString]   
-                    if  GradeString in temp_organization[userRequest['user_key']] and  GradeString not in organization[userRequest['user_key']] :
+                    if  GradeString in temp_organization[userRequest['user_key']]  :
                         organization[userRequest['user_key']][GradeString ] = temp_organization[userRequest['user_key']][GradeString ]   
+
                     if  RecordedYearString in temp_organization[userRequest['user_key']] and RecordedYearString not in organization[userRequest['user_key']] :
                         organization[userRequest['user_key']][RecordedYearString ] = temp_organization[userRequest['user_key']][RecordedYearString ]   
                     if  InputModeString in temp_organization[userRequest['user_key']] and  InputModeString not in organization[userRequest['user_key']] :
