@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.20'
+VersionString = u'1.21'
 
 
 _State0KeyList = [ 
@@ -1943,7 +1943,7 @@ def GetMessage():
                     return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,4) ,userRequest)
                     ##return Arrow().make_Message_Button_change_State(currentState, nx_Child(currentState,3) ,userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][1] :
-                _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                _textMessage = userRequest['content']+SelectString+u'\n'+u'KnP Version: '+ VersionString +u'\n'
                 _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
                 #return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, nx_Child_Sibling(currentState,1,1)   , userRequest)
@@ -2059,7 +2059,7 @@ def GetMessage():
                 tokens[0].strip().isdigit() and \
                 int ( tokens[0].strip() ) == 0 :
 
-                    _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                    _textMessage = userRequest['content']+SelectString+u'\n'+u'KnP Version: '+ VersionString +u'\n'
                     _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
                     return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, prev_Parent(currentState,1) , userRequest)                
                     #return Arrow().make_Message_Button_change_State(currentState, prev_Parent(currentState,1) , userRequest)              
@@ -2114,7 +2114,7 @@ def GetMessage():
                 if   _UserRequestKey in sum_instance.keys() and len(sum_instance[_UserRequestKey])   == 0  :
                     sum_instance.pop( _UserRequestKey )
 
-                _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                _textMessage = userRequest['content']+SelectString+u'\n'+u'KnP Version: '+ VersionString +u'\n'
                 _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, prev_Parent(currentState,2) , userRequest)          
 
@@ -2136,7 +2136,7 @@ def GetMessage():
             elif  userRequest['content'] == StateButtonList[ currentState ][1]   :
                 return  Arrow().make_Message_Button_change_State(currentState,initial_State, userRequest)
             else :
-                _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
+                _textMessage = userRequest['content']+SelectString+u'\n'+u'KnP Version: '+ VersionString +u'\n'
                 _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, prev_Parent(currentState,1) , userRequest)                
 
