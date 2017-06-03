@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.18'
+VersionString = u'1.19'
 
 
 _State0KeyList = [ 
@@ -1583,13 +1583,21 @@ class SummaryText :
             for _key1 in _sumins_org_regrouping[_key0] :
                 for _key2 in _sumins_org_regrouping[_key0][_key1] :
                     for _ins in _sumins_org_regrouping[_key0][_key1][_key2] :
-                        self.mTextGroup[_key0][_key1] += _key2+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString]
+                        if  _key1 == _State1KeyList[3] :  # u'4.지하3층 실습실(핸드피스)' 
+                            self.mTextGroup[_key0][_key1] += _key2+u'번장비\t  '
+                        else :
+                            self.mTextGroup[_key0][_key1] += _key2+u'번자리\t  '
+                        self.mTextGroup[_key0][_key1] += _ins[PartString] + u'\t  '+_ins[SymptomString]
+                        #self.mTextGroup[_key0][_key1] += _key2+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString]
                         if _with == True  :
                             self.mTextGroup[_key0][_key1] += u'\t  '+  str(_ins[IDString]) + u' for System Maintenance'  
                         self.mTextGroup[_key0][_key1] += u'\n'
 
                         # need to upgrade and verify
-                        self.mTextGroup_separation[_key0][_key1].append( _key2+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n' )
+                        if  _key1 == _State1KeyList[3] :  # u'4.지하3층 실습실(핸드피스)' 
+                            self.mTextGroup_separation[_key0][_key1].append( _key2+u'번장비\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n' )
+                        else :
+                            self.mTextGroup_separation[_key0][_key1].append( _key2+u'번자리\t  '+_ins[PartString] + u'\t  '+_ins[SymptomString] +u'\n' )
 
                         self.mInstanceCount += 1
         return self.mTextGroup
