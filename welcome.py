@@ -35,7 +35,7 @@ import traceback
 
 app = Flask(__name__)
 
-VersionString = u'1.19'
+VersionString = u'1.20'
 
 
 _State0KeyList = [ 
@@ -1945,13 +1945,17 @@ def GetMessage():
             elif userRequest['content']  ==  StateButtonList[ currentState ][1] :
                 _textMessage = userRequest['content']+SelectString+u'\n'+u'Version: '+ VersionString +u'\n'
                 _textMessage += SummaryText().generateSumofAll(organization, sum_instance, userRequest['user_key'] ) 
-
                 #return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, currentState, userRequest)
                 return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,  currentState, nx_Child_Sibling(currentState,1,1)   , userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][2] :             
-                _textMessage = userRequest['content']+SelectString
-                _mButton = { "label": "link를 click해주세요", "url" : "https://www.youtube.com/watch?v=fE5P3YLZcr8" }
-                return Arrow()._make_Messages_change_State(True, _textMessage, False , {} , True, _mButton, True,currentState, currentState , userRequest)
+                _textMessage = userRequest['content']+SelectString+u'\n\n'
+                _textMessage += u'KnP 고장수리 톡 사용안내 1부\n(처음 사용하기)'+u'\n'
+                _textMessage += u'https://youtu.be/OCy3ylSq-hs'+u'\n\n'
+                _textMessage += u'KnP 고장수리 톡 사용안내 2부\n(입력 예시)'+u'\n'
+                _textMessage += u'https://youtu.be/rGUweN0JcBg'+u'\n\n'
+                _textMessage += u'KnP 고장수리 톡 사용안내 3부\n(삭제하기)'+u'\n'
+                _textMessage += u'https://youtu.be/NJOEiSimICY'
+                return Arrow()._make_Message_Button_change_State(True, _textMessage, True ,currentState , currentState, userRequest)
             elif userRequest['content']  ==  StateButtonList[ currentState ][3] :            
                 return Arrow().make_Message_Button_change_State(currentState,    nx_Child_Sibling(currentState,1,3) , userRequest)
                   
